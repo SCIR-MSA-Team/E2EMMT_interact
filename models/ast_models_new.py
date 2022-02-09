@@ -232,34 +232,19 @@ class MTModel(nn.Module):
         curr_embedding=torch.randn(batch_size, embedding_size).to(mode1.device)
 
         for step in range(mode1.shape[0]):
-            # print('step',step)
             mode1_cls_embedding = mode1[step, :, 0, :]
-            # print('mode1_cls_embedding',mode1_cls_embedding)
             mode1_other_embedding = mode1[step, :, 1:, :]
-            # print('mode1_other_embedding',mode1_other_embedding)
             mode2_cls_embedding = mode2[step, :, 0, :]
-            # print('mode2_cls_embedding',mode2_cls_embedding)
             mode3_cls_embedding = mode3[step, :, 0, :]
-            # print('mode3_cls_embedding',mode3_cls_embedding)
             map1_embedding = map1(torch.cat((mode2_cls_embedding,mode3_cls_embedding),1))
-            # print('map1_embedding',map1_embedding)
-            # print('curr_embedding',curr_embedding)
-            # print('mode1_cls_embedding',mode1_cls_embedding)
-            # print('map2.weight',map2.weight)
             map2_embedding = map2(torch.cat((map1_embedding, curr_embedding, mode1_cls_embedding),1))
-            # print('map2_embedding',map2_embedding)
             new_t_attention = torch.bmm(mode1_other_embedding,map2_embedding.unsqueeze(-1)).permute(0,2,1)
-            # print('new_t_attention.shape',new_t_attention.shape)
-            # exit()
             new_t_attention = torch.softmax(new_t_attention,-1)
-            # print('new_t_attention',new_t_attention)
             new_t = torch.bmm(new_t_attention,mode1_other_embedding).squeeze(1)
             new_t = F.normalize(new_t)
-            # print('new_t',new_t)
             curr_embedding = new_t + map2_embedding
             curr_embedding = F.normalize(curr_embedding,dim=-1)
-            # print('curr_embedding',curr_embedding)
-        return curr_embedding #输出了一下发现是NAN
+        return curr_embedding 
 
     @autocast()
     def forward(self, audio_input, video_input, text_input):
@@ -276,17 +261,7 @@ class MTModel(nn.Module):
         text_cls = text_hidden_states[-1, :, 0, :]
         audio_cls = audio_hidden_states[-1, :, 0, :]
         video_cls = video_hidden_states[-1, :, 0, :]
-        # print('video_cls.shape',video_cls)
         
-        # print('video_inte_embedding.shape',video_inte_embedding)
-        # print('text_cls.shape',text_cls.shape)
-        # print('text_inte_embedding.shape',text_inte_embedding.shape)
-        # print('audio_cls.shape',audio_cls.shape)
-        # print('audio_inte_embedding.shape',audio_inte_embedding.shape)
-        # print(torch.cat((text_cls, text_inte_embedding, video_cls, video_inte_embedding, audio_cls, audio_inte_embedding),-1).shape)
         result = self.fusion(torch.cat((text_cls, text_inte_embedding, video_cls, video_inte_embedding, audio_cls, audio_inte_embedding),-1))
-        # print('result.shape',result.shape)
-        # print('result',result)
-        # exit()
         return result
 

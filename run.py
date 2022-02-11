@@ -101,7 +101,8 @@ if args.model == 'ast':
     val_conf = {'num_mel_bins': 128, 'num_height':384, 'num_width':384, 'target_length': target_length[args.dataset], 'freqm': 0, 'timem': 0, 'mixup': 0, 'dataset': args.dataset, 'mode':'evaluation', 'mean':norm_stats[args.dataset][0], 'std':norm_stats[args.dataset][1], 'noise':False,
                 'time_dim_split':args.time_dim_split}
 
-    mtcnn = MTCNN(image_size=args.face_size, margin=0, post_process=False, device="cpu")
+    # mtcnn = MTCNN(image_size=args.face_size, margin=0, post_process=False, device="cpu")
+    mtcnn = MTCNN(image_size=args.face_size, margin=10, selection_method="probability", post_process=False, device='cpu')
     tokenizer_model = BertTokenizer.from_pretrained("/users10/zyzhang/graduationProject/data/pretrain_model/bert_base_uncased")
     # tokenizer_model = BertTokenizer.from_pretrained("/users5/ywu/MMSA/pretrained_model/bert_en")
     print('000')

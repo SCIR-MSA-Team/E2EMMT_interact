@@ -5,7 +5,6 @@
 # @Email   : yuangong@mit.edu
 # @File    : ast_models.py
 
-from turtle import shape
 import torch
 import torch.nn as nn
 from torch.cuda.amp import autocast
@@ -217,34 +216,55 @@ class MTModel(nn.Module):
         self.modals = modals
         self.final_dims = len(self.modals)*768
         self.fusion_head = nn.Sequential(nn.LayerNorm(self.final_dims), nn.Linear(self.final_dims, label_dim)) 
-        self.text_map1 = nn.Sequential(nn.LayerNorm(768*2), nn.Linear(768*2, 768))
-        self.text_map2 = nn.Sequential(nn.LayerNorm(768*3), nn.Linear(768*3, 768))
-        self.audio_map1 = nn.Sequential(nn.LayerNorm(768*2), nn.Linear(768*2, 768))
-        self.audio_map2 = nn.Sequential(nn.LayerNorm(768*3), nn.Linear(768*3, 768))
-        self.video_map1 = nn.Sequential(nn.LayerNorm(768*2), nn.Linear(768*2, 768))
-        self.video_map2 = nn.Sequential(nn.LayerNorm(768*3), nn.Linear(768*3, 768))
-        self.fusion = nn.Sequential(nn.LayerNorm(768*6), nn.Linear(768*6, label_dim))
+        self.layerNorm = nn.LayerNorm(768)
+        self.text_map1 = nn.Linear(768*2, 768)
+        # self.text_map2 = nn.Sequential(nn.LayerNorm(768*3), nn.Linear(768*3, 768))
+        self.text_map2_text = nn.Linear(768*3, 768)
+        self.text_map2_audio = nn.Linear(768*3, 768)
+        self.text_map2_video = nn.Linear(768*3, 768)
+        self.audio_map1 = nn.Linear(768*2, 768)
+        # self.audio_map2 = nn.Sequential(nn.LayerNorm(768*3), nn.Linear(768*3, 768))
+        self.audio_map2_text = nn.Linear(768*3, 768)
+        self.audio_map2_audio = nn.Linear(768*3, 768)
+        self.audio_map2_video = nn.Linear(768*3, 768)
+        self.video_map1 = nn.Linear(768*2, 768)
+        # self.video_map2 = nn.Sequential(nn.LayerNorm(768*3), nn.Linear(768*3, 768))
+        self.video_map2_text = nn.Linear(768*3, 768)
+        self.video_map2_audio = nn.Linear(768*3, 768)
+        self.video_map2_video = nn.Linear(768*3, 768)
+        self.text_predict = nn.Linear(768, label_dim)
+        self.video_predict = nn.Linear(768, label_dim)
+        self.audio_predict = nn.Linear(768, label_dim)
+        self.fusion = nn.Linear(768*6+6*3, label_dim)
         
     
-    def interaction(self, mode1, mode2, mode3, map1, map2):
+    def interaction(self, mode1, mode2, mode3, map1, linear_a, linear_b, linear_c):
         batch_size = mode1.shape[1]
         embedding_size = mode1.shape[3]
         curr_embedding=torch.randn(batch_size, embedding_size).to(mode1.device)
 
         for step in range(mode1.shape[0]):
-            mode1_cls_embedding = mode1[step, :, 0, :]
-            mode1_other_embedding = mode1[step, :, 1:, :]
-            mode2_cls_embedding = mode2[step, :, 0, :]
-            mode3_cls_embedding = mode3[step, :, 0, :]
-            map1_embedding = map1(torch.cat((mode2_cls_embedding,mode3_cls_embedding),1))
-            map2_embedding = map2(torch.cat((map1_embedding, curr_embedding, mode1_cls_embedding),1))
+            curr_embedding = self.layerNorm(curr_embedding)
+            mode1_cls_embedding = self.layerNorm(mode1[step, :, 0, :])
+            mode1_other_embedding = self.layerNorm(mode1[step, :, 1:, :])
+            mode2_cls_embedding = self.layerNorm(mode2[step, :, 0, :])
+            mode3_cls_embedding = self.layerNorm(mode3[step, :, 0, :])
+
+            map1_embedding = self.layerNorm(map1(torch.cat((mode2_cls_embedding,mode3_cls_embedding),1)))
+            map2_embedding_a = torch.sigmoid(linear_a(torch.cat((map1_embedding, curr_embedding, mode1_cls_embedding),1))) * map1_embedding
+            map2_embedding_b = torch.sigmoid(linear_b(torch.cat((map1_embedding, curr_embedding, mode1_cls_embedding),1))) * curr_embedding
+            map2_embedding_c = torch.sigmoid(linear_c(torch.cat((map1_embedding, curr_embedding, mode1_cls_embedding),1))) * mode1_cls_embedding 
+            map2_embedding = map2_embedding_a + map2_embedding_b + map2_embedding_c
+            print('mode1_other_embedding.shape',mode1_other_embedding.shape)
+            print('map2_embedding.shape',map2_embedding.shape)
             new_t_attention = torch.bmm(mode1_other_embedding,map2_embedding.unsqueeze(-1)).permute(0,2,1)
+            # new_t_attention = 
             new_t_attention = torch.softmax(new_t_attention,-1)
             new_t = torch.bmm(new_t_attention,mode1_other_embedding).squeeze(1)
             new_t = F.normalize(new_t)
             curr_embedding = new_t + map2_embedding
             curr_embedding = F.normalize(curr_embedding,dim=-1)
-        return curr_embedding 
+        return curr_embedding
 
     @autocast()
     def forward(self, audio_input, video_input, text_input):
@@ -255,13 +275,15 @@ class MTModel(nn.Module):
 
         video_last_hidden_state, video_pooler_output, video_hidden_states = self.video_model(video_input)
         audio_hidden_states = self.audio_model(audio_input)
-        text_inte_embedding = self.interaction(text_hidden_states,audio_hidden_states,video_hidden_states,self.text_map1,self.text_map2)
-        audio_inte_embedding = self.interaction(audio_hidden_states, text_hidden_states, video_hidden_states, self.audio_map1, self.audio_map2)
-        video_inte_embedding = self.interaction(video_hidden_states, text_hidden_states, audio_hidden_states, self.video_map1, self.video_map2)
+        text_inte_embedding = self.interaction(text_hidden_states,audio_hidden_states,video_hidden_states,self.text_map1, self.text_map2_text,self.text_map2_audio, self.text_map2_video)
+        audio_inte_embedding = self.interaction(audio_hidden_states, text_hidden_states, video_hidden_states, self.audio_map1, self.audio_map2_audio,self.audio_map2_text, self.audio_map2_video)
+        video_inte_embedding = self.interaction(video_hidden_states, text_hidden_states, audio_hidden_states, self.video_map1, self.video_map2_video,self.video_map2_text,self.video_map2_audio)
         text_cls = text_hidden_states[-1, :, 0, :]
         audio_cls = audio_hidden_states[-1, :, 0, :]
         video_cls = video_hidden_states[-1, :, 0, :]
-        
-        result = self.fusion(torch.cat((text_cls, text_inte_embedding, video_cls, video_inte_embedding, audio_cls, audio_inte_embedding),-1))
+        text_pred = self.text_predict(text_cls)
+        video_pred = self.video_predict(video_cls)
+        audio_pred = self.audio_predict(audio_cls)
+        result = self.fusion(torch.cat((text_cls, text_inte_embedding, text_pred, video_cls, video_inte_embedding, video_pred, audio_cls, audio_inte_embedding, audio_pred),-1))
         return result
 

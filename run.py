@@ -72,9 +72,15 @@ parser.add_argument('--v_imagenet_pretrain', help='if use ImageNet pretrained au
 parser.add_argument('--a_imagenet_pretrain', help='if use ImageNet pretrained audio spectrogram transformer model', type=ast.literal_eval, default='True')
 parser.add_argument('--audioset_pretrain', help='if use ImageNet and audioset pretrained audio spectrogram transformer model', type=ast.literal_eval, default='False')
 parser.add_argument('--time_dim_split', help='if use time-dim split', type=ast.literal_eval, default='True')
-
+parser.add_argument("--seed",type=int,required=True)
 
 args = parser.parse_args()
+seed = args.seed
+torch.manual_seed(seed)
+np.random.seed(seed)
+torch.backends.cudnn.deterministic = True
+torch.backends.cudnn.benchmark = False
+
 if args.dataset == 'mosei':
     args.data_train = 'train_mosei_dataset.json'
     args.data_val =  'valid_mosei_dataset.json'
@@ -105,19 +111,15 @@ if args.model == 'ast':
     mtcnn = MTCNN(image_size=args.face_size, margin=10, selection_method="probability", post_process=False, device='cpu')
     tokenizer_model = BertTokenizer.from_pretrained("/users10/zyzhang/graduationProject/data/pretrain_model/bert_base_uncased")
     # tokenizer_model = BertTokenizer.from_pretrained("/users5/ywu/MMSA/pretrained_model/bert_en")
-    print('000')
     trainset = dataloader.MultimodalDataset(args.data_train, label_map=label_maps[args.dataset], conf=conf, face_model=mtcnn, face_size=args.face_size, tokenizer_model=tokenizer_model)
-    print('111')
     train_loader = torch.utils.data.DataLoader(
         trainset,
         collate_fn=dataloader.collate_fn,
         batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers, pin_memory=True)
-    print('222')
     val_loader = torch.utils.data.DataLoader(
         dataloader.MultimodalDataset(args.data_val, label_map=label_maps[args.dataset], conf=val_conf, face_model=mtcnn, face_size=args.face_size, tokenizer_model=tokenizer_model),
         collate_fn=dataloader.collate_fn,
         batch_size=args.batch_size*2, shuffle=False, num_workers=args.num_workers, pin_memory=True)
-    print('333')
     audio_model = models.ASTModel(label_dim=args.n_class, fstride=args.fstride, tstride=args.tstride, input_fdim=128,
                                   input_tdim=target_length[args.dataset], imagenet_pretrain=args.a_imagenet_pretrain,
                                   audioset_pretrain=False, model_size='base384', patch_num=args.a_patch_num)

@@ -256,6 +256,7 @@ class MTModel(nn.Module):
             # mode2_cls_embedding.shape torch.Size([8, 768])
             mode3_cls_embedding = self.layerNorm(mode3[step, :, 0, :])
             # mode3_cls_embedding.shape torch.Size([8, 768])
+            
 
             map1_embedding = self.layerNorm(map1(torch.cat((mode2_cls_embedding,mode3_cls_embedding),1)))
             # map1_embedding.shape torch.Size([8, 768])
@@ -273,7 +274,7 @@ class MTModel(nn.Module):
             new_t_attention = new_t_attention.unsqueeze(1)
             # new_t_attention.shape torch.Size([8, 1, 299])
             new_t = torch.bmm(new_t_attention,mode1_other_embedding).squeeze(1)
-            new_t = F.normalize(new_t)
+            # new_t = F.normalize(new_t)
             # new_t.shape torch.Size([8, 768])
 
             curr_embedding = new_t + map2_embedding
@@ -300,7 +301,6 @@ class MTModel(nn.Module):
         text_pred = self.text_predict(text_cls)
         video_pred = self.video_predict(video_cls)
         audio_pred = self.audio_predict(audio_cls)
-        multimode_pred = self.fusion(torch.cat((text_inte_embedding, video_inte_embedding, audio_inte_embedding),-1))
+        multimode_pred = self.fusion(torch.cat((text_inte_embedding, text_cls, video_inte_embedding, video_cls, audio_inte_embedding, audio_cls),-1))
         result = self.weighted_fusion(torch.stack((text_pred, video_pred, audio_pred, multimode_pred),-1)).squeeze(-1)
         return result
-

@@ -216,8 +216,11 @@ class MTModel(nn.Module):
         self.text_model = text_model
         self.modals = modals
         self.final_dims = len(self.modals)*768
-        self.fusion_head = nn.Sequential(nn.LayerNorm(self.final_dims), nn.Linear(self.final_dims, label_dim)) 
         self.layerNorm = nn.LayerNorm(768)
+        self.layerNorm_text = nn.LayerNorm(768)
+        self.layerNorm_video = nn.LayerNorm(768)
+        self.layerNorm_audio = nn.LayerNorm(768)
+        self.layerNorm2 = nn.LayerNorm(768)
         self.text_map1 = nn.Linear(768*2, 768)
         self.text_attention = nn.Linear(768*2, 1)
         self.text_map2_text = nn.Linear(768*3, 768)
@@ -236,11 +239,11 @@ class MTModel(nn.Module):
         self.text_predict = nn.Linear(768, label_dim)
         self.video_predict = nn.Linear(768, label_dim)
         self.audio_predict = nn.Linear(768, label_dim)
-        self.fusion = nn.Linear(768*3, label_dim)
+        self.fusion = nn.Linear(768*6, label_dim)
         self.weighted_fusion = nn.Linear(4, 1, bias=False)
         
     
-    def interaction(self, mode1, mode2, mode3, map1, linear_a, linear_b, linear_c, attention):
+    def interaction(self, mode1, mode2, mode3, map1, linear_a, linear_b, linear_c, attention, layerNorm1, layerNorm2, layerNorm3):
         batch_size = mode1.shape[1]
         embedding_size = mode1.shape[3]
         curr_embedding=torch.randn(batch_size, embedding_size).to(mode1.device)
@@ -248,13 +251,13 @@ class MTModel(nn.Module):
         for step in range(mode1.shape[0]):
             curr_embedding = self.layerNorm(curr_embedding)
             # curr_embedding.shape torch.Size([8, 768])
-            mode1_cls_embedding = self.layerNorm(mode1[step, :, 0, :])
+            mode1_cls_embedding = layerNorm1(mode1[step, :, 0, :])
             # mode1_cls_embedding.shape torch.Size([8, 768])
-            mode1_other_embedding = self.layerNorm(mode1[step, :, 1:, :])
+            mode1_other_embedding = layerNorm1(mode1[step, :, 1:, :])
             # mode1_other_embedding.shape torch.Size([8, 299, 768])
-            mode2_cls_embedding = self.layerNorm(mode2[step, :, 0, :])
+            mode2_cls_embedding = layerNorm2(mode2[step, :, 0, :])
             # mode2_cls_embedding.shape torch.Size([8, 768])
-            mode3_cls_embedding = self.layerNorm(mode3[step, :, 0, :])
+            mode3_cls_embedding = layerNorm3(mode3[step, :, 0, :])
             # mode3_cls_embedding.shape torch.Size([8, 768])
             
 
@@ -274,27 +277,21 @@ class MTModel(nn.Module):
             new_t_attention = new_t_attention.unsqueeze(1)
             # new_t_attention.shape torch.Size([8, 1, 299])
             new_t = torch.bmm(new_t_attention,mode1_other_embedding).squeeze(1)
-            # new_t = F.normalize(new_t)
             # new_t.shape torch.Size([8, 768])
-
             curr_embedding = new_t + map2_embedding
-            curr_embedding = F.normalize(curr_embedding,dim=-1)
-            # curr_embedding.shape torch.Size([8, 768])
-            # exit()
+            curr_embedding = self.layerNorm2(curr_embedding)
         return curr_embedding
 
     @autocast()
     def forward(self, audio_input, video_input, text_input):
-        all_logits = []
-
         text_last_hidden_state, text_pooler_output, text_hidden_states = self.text_model(text_input)
-        # all_logits.append(t_out)
 
         video_last_hidden_state, video_pooler_output, video_hidden_states = self.video_model(video_input)
         audio_hidden_states = self.audio_model(audio_input)
-        text_inte_embedding = self.interaction(text_hidden_states,audio_hidden_states,video_hidden_states,self.text_map1, self.text_map2_text,self.text_map2_audio, self.text_map2_video,self.text_attention)
-        audio_inte_embedding = self.interaction(audio_hidden_states, text_hidden_states, video_hidden_states, self.audio_map1, self.audio_map2_audio,self.audio_map2_text, self.audio_map2_video,self.audio_attention)
-        video_inte_embedding = self.interaction(video_hidden_states, text_hidden_states, audio_hidden_states, self.video_map1, self.video_map2_video,self.video_map2_text,self.video_map2_audio,self.video_attention)
+        
+        text_inte_embedding = self.interaction(text_hidden_states,audio_hidden_states,video_hidden_states,self.text_map1, self.text_map2_text,self.text_map2_audio, self.text_map2_video,self.text_attention, self.layerNorm_text, self.layerNorm_audio, self.layerNorm_video)
+        audio_inte_embedding = self.interaction(audio_hidden_states, text_hidden_states, video_hidden_states, self.audio_map1, self.audio_map2_audio,self.audio_map2_text, self.audio_map2_video,self.audio_attention, self.layerNorm_audio, self.layerNorm_text, self.layerNorm_video)
+        video_inte_embedding = self.interaction(video_hidden_states, text_hidden_states, audio_hidden_states, self.video_map1, self.video_map2_video,self.video_map2_text,self.video_map2_audio,self.video_attention, self.layerNorm_video, self.layerNorm_text, self.layerNorm_audio)
         text_cls = text_hidden_states[-1, :, 0, :]
         audio_cls = audio_hidden_states[-1, :, 0, :]
         video_cls = video_hidden_states[-1, :, 0, :]

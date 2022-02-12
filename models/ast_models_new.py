@@ -247,25 +247,39 @@ class MTModel(nn.Module):
 
         for step in range(mode1.shape[0]):
             curr_embedding = self.layerNorm(curr_embedding)
+            # curr_embedding.shape torch.Size([8, 768])
             mode1_cls_embedding = self.layerNorm(mode1[step, :, 0, :])
+            # mode1_cls_embedding.shape torch.Size([8, 768])
             mode1_other_embedding = self.layerNorm(mode1[step, :, 1:, :])
+            # mode1_other_embedding.shape torch.Size([8, 299, 768])
             mode2_cls_embedding = self.layerNorm(mode2[step, :, 0, :])
+            # mode2_cls_embedding.shape torch.Size([8, 768])
             mode3_cls_embedding = self.layerNorm(mode3[step, :, 0, :])
+            # mode3_cls_embedding.shape torch.Size([8, 768])
 
             map1_embedding = self.layerNorm(map1(torch.cat((mode2_cls_embedding,mode3_cls_embedding),1)))
+            # map1_embedding.shape torch.Size([8, 768])
             map2_embedding_a = torch.sigmoid(linear_a(torch.cat((map1_embedding, curr_embedding, mode1_cls_embedding),1))) * map1_embedding
+            # map2_embedding_a.shape torch.Size([8, 768])
             map2_embedding_b = torch.sigmoid(linear_b(torch.cat((map1_embedding, curr_embedding, mode1_cls_embedding),1))) * curr_embedding
+            # map2_embedding_b.shape torch.Size([8, 768])
             map2_embedding_c = torch.sigmoid(linear_c(torch.cat((map1_embedding, curr_embedding, mode1_cls_embedding),1))) * mode1_cls_embedding 
+            # map2_embedding_c.shape torch.Size([8, 768])
             map2_embedding = map2_embedding_a + map2_embedding_b + map2_embedding_c
+            # map2_embedding.shape torch.Size([8, 768])
             new_t_attention = attention(torch.cat((mode1_other_embedding,map2_embedding.unsqueeze(1).expand(-1,mode1_other_embedding.shape[1],-1)),-1)).squeeze(-1)
             # new_t_attention = torch.bmm(mode1_other_embedding,map2_embedding.unsqueeze(-1)).permute(0,2,1)
             new_t_attention = torch.softmax(new_t_attention,-1)
             new_t_attention = new_t_attention.unsqueeze(1)
+            # new_t_attention.shape torch.Size([8, 1, 299])
             new_t = torch.bmm(new_t_attention,mode1_other_embedding).squeeze(1)
             new_t = F.normalize(new_t)
+            # new_t.shape torch.Size([8, 768])
 
             curr_embedding = new_t + map2_embedding
             curr_embedding = F.normalize(curr_embedding,dim=-1)
+            # curr_embedding.shape torch.Size([8, 768])
+            # exit()
         return curr_embedding
 
     @autocast()

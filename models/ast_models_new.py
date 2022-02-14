@@ -148,10 +148,12 @@ class VTModel(nn.Module):
     def __init__(self, label_dim=527, fstride=10, tstride=10, input_fdim=128, input_tdim=1024, imagenet_pretrain=True, audioset_pretrain=False, model_size='base384', patch_num=256, verbose=True):
 
         super(VTModel, self).__init__()
-        self.v = BeitModel.from_pretrained('microsoft/beit-base-patch16-224-pt22k-ft22k')
+        # self.v = BeitModel.from_pretrained('microsoft/beit-base-patch16-224-pt22k-ft22k')
+        self.v = BeitModel.from_pretrained('/users10/zyzhang/graduationProject/data/pretrain_model/beit-base-patch16-224-pt22k-ft22k')
         self.original_embedding_dim = 768
         self.mlp_head = nn.Sequential(nn.LayerNorm(self.original_embedding_dim), nn.Linear(self.original_embedding_dim, label_dim))
-        self.feature_extract = BeitFeatureExtractor.from_pretrained("microsoft/beit-base-patch16-224-pt22k-ft22k")
+        # self.feature_extract = BeitFeatureExtractor.from_pretrained("microsoft/beit-base-patch16-224-pt22k-ft22k")
+        self.feature_extract = BeitFeatureExtractor.from_pretrained('/users10/zyzhang/graduationProject/data/pretrain_model/beit-base-patch16-224-pt22k-ft22k')
 
     def get_shape(self, fstride, tstride, input_fdim=384, input_tdim=384):
         test_input = torch.randn(1, 3, input_fdim, input_tdim)

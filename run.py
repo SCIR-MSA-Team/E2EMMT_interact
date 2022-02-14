@@ -16,6 +16,7 @@ import torch
 from torch.utils.data import WeightedRandomSampler
 basepath = os.path.dirname(os.path.dirname(sys.path[0]))
 sys.path.append(basepath)
+print('basepath',basepath)
 import dataloader
 import models
 import numpy as np
@@ -45,7 +46,7 @@ parser.add_argument("--text_lr_factor", type=int, default=100, help="text_lr_fac
 parser.add_argument("--exp-dir", type=str, default="exp1202", help="directory to dump experiments")
 parser.add_argument('--lr', '--learning-rate', default=0.0001, type=float, metavar='LR', help='initial learning rate')
 parser.add_argument("--optim", type=str, default="adam", help="training optimizer", choices=["sgd", "adam"])
-parser.add_argument('-b', '--batch-size', default=8, type=int, metavar='N', help='mini-batch size')
+parser.add_argument('--batch-size', default=8, type=int, metavar='N', help='mini-batch size')
 parser.add_argument('-w', '--num-workers', default=10, type=int, metavar='NW', help='# of workers for dataloading (default: 32)')
 parser.add_argument("--n-epochs", type=int, default=20, help="number of maximum training epochs")
 # not used in the formal experiments
@@ -90,36 +91,40 @@ elif args.dataset == 'iemocap':
     args.data_val =  'valid_iemocap_dataset.json'
     args.data_eval = 'test_iemocap_dataset.json'
 
+print('args.batch_size',args.batch_size)
+print('args',args)
+
+# dataset spectrogram mean and std, used to normalize the input
+norm_stats = {'mosei':[-4.292258, 4.324287], 'iemocap':[-3.714969, 4.8446374]}
+# image, audio
+target_length = {'mosei':1024, 'iemocap':1024}
+# if add noise for data augmentation, only use for speech commands
+noise = {'mosei': False, 'iemocap': False}
+label_maps = {"mosei": ['anger', 'disgust', 'fear', 'happy', 'sad', 'surprise'],
+                  "iemocap": ['ang', 'exc', 'fru', 'hap', 'neu', 'sad']}
+
+conf = {'num_mel_bins': 128, 'num_height':384, 'num_width':384, 'target_length': target_length[args.dataset], 'freqm': args.freqm, 'timem': args.timem, 'mixup': args.mixup, 'dataset': args.dataset, 'mode':'train', 'mean':norm_stats[args.dataset][0], 'std':norm_stats[args.dataset][1],
+                  'noise':noise[args.dataset], 'time_dim_split':args.time_dim_split}
+val_conf = {'num_mel_bins': 128, 'num_height':384, 'num_width':384, 'target_length': target_length[args.dataset], 'freqm': 0, 'timem': 0, 'mixup': 0, 'dataset': args.dataset, 'mode':'evaluation', 'mean':norm_stats[args.dataset][0], 'std':norm_stats[args.dataset][1], 'noise':False,
+                'time_dim_split':args.time_dim_split}
+
+# mtcnn = MTCNN(image_size=args.face_size, margin=0, post_process=False, device="cpu")
+mtcnn = MTCNN(image_size=args.face_size, margin=10, selection_method="probability", post_process=False, device='cpu')
+tokenizer_model = BertTokenizer.from_pretrained("/users10/zyzhang/graduationProject/data/pretrain_model/bert_base_uncased")
+# tokenizer_model = BertTokenizer.from_pretrained("/users5/ywu/MMSA/pretrained_model/bert_en")
+trainset = dataloader.MultimodalDataset(args.data_train, label_map=label_maps[args.dataset], conf=conf, face_model=mtcnn, face_size=args.face_size, tokenizer_model=tokenizer_model)
+train_loader = torch.utils.data.DataLoader(
+    trainset,
+    collate_fn=dataloader.collate_fn,
+    batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers, pin_memory=True)
+val_loader = torch.utils.data.DataLoader(
+    dataloader.MultimodalDataset(args.data_val, label_map=label_maps[args.dataset], conf=val_conf, face_model=mtcnn, face_size=args.face_size, tokenizer_model=tokenizer_model),
+    collate_fn=dataloader.collate_fn,
+    batch_size=args.batch_size*2, shuffle=False, num_workers=args.num_workers, pin_memory=True)
+
 # transformer based model
 if args.model == 'ast':
     print('now train a audio spectrogram transformer model')
-    # dataset spectrogram mean and std, used to normalize the input
-    norm_stats = {'mosei':[-4.292258, 4.324287], 'iemocap':[-3.714969, 4.8446374]}
-    # image, audio
-    target_length = {'mosei':1024, 'iemocap':1024}
-    # if add noise for data augmentation, only use for speech commands
-    noise = {'mosei': False, 'iemocap': False}
-    label_maps = {"mosei": ['anger', 'disgust', 'fear', 'happy', 'sad', 'surprise'],
-                  "iemocap": ['ang', 'exc', 'fru', 'hap', 'neu', 'sad']}
-
-    conf = {'num_mel_bins': 128, 'num_height':384, 'num_width':384, 'target_length': target_length[args.dataset], 'freqm': args.freqm, 'timem': args.timem, 'mixup': args.mixup, 'dataset': args.dataset, 'mode':'train', 'mean':norm_stats[args.dataset][0], 'std':norm_stats[args.dataset][1],
-                  'noise':noise[args.dataset], 'time_dim_split':args.time_dim_split}
-    val_conf = {'num_mel_bins': 128, 'num_height':384, 'num_width':384, 'target_length': target_length[args.dataset], 'freqm': 0, 'timem': 0, 'mixup': 0, 'dataset': args.dataset, 'mode':'evaluation', 'mean':norm_stats[args.dataset][0], 'std':norm_stats[args.dataset][1], 'noise':False,
-                'time_dim_split':args.time_dim_split}
-
-    # mtcnn = MTCNN(image_size=args.face_size, margin=0, post_process=False, device="cpu")
-    mtcnn = MTCNN(image_size=args.face_size, margin=10, selection_method="probability", post_process=False, device='cpu')
-    tokenizer_model = BertTokenizer.from_pretrained("/users10/zyzhang/graduationProject/data/pretrain_model/bert_base_uncased")
-    # tokenizer_model = BertTokenizer.from_pretrained("/users5/ywu/MMSA/pretrained_model/bert_en")
-    trainset = dataloader.MultimodalDataset(args.data_train, label_map=label_maps[args.dataset], conf=conf, face_model=mtcnn, face_size=args.face_size, tokenizer_model=tokenizer_model)
-    train_loader = torch.utils.data.DataLoader(
-        trainset,
-        collate_fn=dataloader.collate_fn,
-        batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers, pin_memory=True)
-    val_loader = torch.utils.data.DataLoader(
-        dataloader.MultimodalDataset(args.data_val, label_map=label_maps[args.dataset], conf=val_conf, face_model=mtcnn, face_size=args.face_size, tokenizer_model=tokenizer_model),
-        collate_fn=dataloader.collate_fn,
-        batch_size=args.batch_size*2, shuffle=False, num_workers=args.num_workers, pin_memory=True)
     audio_model = models.ASTModel(label_dim=args.n_class, fstride=args.fstride, tstride=args.tstride, input_fdim=128,
                                   input_tdim=target_length[args.dataset], imagenet_pretrain=args.a_imagenet_pretrain,
                                   audioset_pretrain=False, model_size='base384', patch_num=args.a_patch_num)
@@ -133,7 +138,18 @@ if args.model == 'ast':
     mt_model = models.MTModel(args.n_class, audio_model, video_model, text_model)
 
     args.PosWeight = trainset.getPosWeight()
+elif args.model == 'only_video':
+    video_model = models.VTModel(label_dim=args.n_class, fstride=args.fstride, tstride=args.tstride, input_fdim=384,
+                                  input_tdim=384, imagenet_pretrain=args.v_imagenet_pretrain,
+                                  audioset_pretrain=False, model_size='base384', patch_num=args.v_patch_num)
+    mt_model = models.only_video(args.n_class,video_model)
+elif args.model == 'video_text':
+    video_model = models.VTModel(label_dim=args.n_class, fstride=args.fstride, tstride=args.tstride, input_fdim=384,
+                                  input_tdim=384, imagenet_pretrain=args.v_imagenet_pretrain,
+                                  audioset_pretrain=False, model_size='base384', patch_num=args.v_patch_num)
 
+    text_model = models.TTModel(num_classes=args.n_class)
+    mt_model = models.video_text(label_dim=args.n_class, audio_model=None, video_model=video_model, text_model=text_model)
 
 
 if args.n_epochs > 0:

@@ -5,6 +5,5 @@
 # @Email   : yuangong@mit.edu
 # @File    : __init__.py
 
-from .ast_models_new import *
 from .only_video import *
-from .video_text import *
+# from .video_text import *

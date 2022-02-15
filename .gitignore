@@ -3,3 +3,9 @@ pkl_files
 *.txt
 __pycache__
 model_dir
+*.sh
+extractDataFile
+compare_model
+*.json
+
+

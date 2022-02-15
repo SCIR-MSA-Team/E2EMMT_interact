@@ -11,7 +11,7 @@ import torch.nn as nn
 from torch.cuda.amp import autocast
 import os
 import wget
-os.environ['TORCH_HOME'] = '../pretrained_models'
+os.environ['TORCH_HOME'] = '/users/ywu/pretrained_models'
 import timm
 import torch.nn.functional as F
 from timm.models.layers import to_2tuple,trunc_normal_

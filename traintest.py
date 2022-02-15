@@ -127,21 +127,26 @@ def train(mmt_model, train_loader, test_loader, args, tokenizer_model):
                 print('warm-up learning rate is {:f}'.format(optimizer.param_groups[0]['lr']))
 
             with autocast():
-                # tav_output, v_overlap_one, a_overlap_two, v_overlap_two = mmt_model(audio_input, video_input, text_input)
-                tav_output = mmt_model(audio_input, video_input, text_input)
+                tav_output, text_layer_pred_results, audio_layer_pred_results, video_layer_pred_results = mmt_model(audio_input, video_input, text_input)
                 if isinstance(loss_fn, torch.nn.CrossEntropyLoss):
                     loss = loss_fn(tav_output, torch.argmax(labels.long(), axis=1))
+                    layer_num = int(text_layer_pred_results.size(0)/tav_output.size(0))
+                    layer_labels = labels.unsqueeze(0).expand(layer_num, tav_output.size(0), -1).contiguous().view(text_layer_pred_results.size(0), -1)
+                    text_fusion_loss = loss_fn(text_layer_pred_results, torch.argmax(layer_labels.long(), axis=1))
+                    audio_fusion_loss = loss_fn(audio_layer_pred_results, torch.argmax(layer_labels.long(), axis=1))
+                    video_fusion_loss = loss_fn(video_layer_pred_results, torch.argmax(layer_labels.long(), axis=1))
+                    loss += (text_fusion_loss + audio_fusion_loss + video_fusion_loss) * (args.layer_loss_factor)
+
                 else:
                     loss = loss_fn(tav_output, labels)
+                    layer_num = int(text_layer_pred_results.size(0)/tav_output.size(0))
+                    layer_labels = labels.unsqueeze(0).expand(layer_num, tav_output.size(0), -1).contiguous().view(text_layer_pred_results.size(0), -1)
+                    text_fusion_loss = loss_fn(text_layer_pred_results, layer_labels)
+                    audio_fusion_loss = loss_fn(audio_layer_pred_results, layer_labels)
+                    video_fusion_loss = loss_fn(video_layer_pred_results, layer_labels)
+                    loss += (text_fusion_loss + audio_fusion_loss + video_fusion_loss) * (args.layer_loss_factor)
                 
-                # reg_loss_fn = nn.L1Loss()
-                # eye_tensor = torch.eye(256).to(device)
 
-                # reg_loss = (reg_loss_fn(a_overlap_two, eye_tensor) \
-                #                     + reg_loss_fn(v_overlap_one, eye_tensor) + reg_loss_fn(v_overlap_two, eye_tensor))
-
-                # loss += args.scale * reg_loss
-                
 
             # optimization if amp is not used
             # optimizer.zero_grad()
@@ -278,7 +283,7 @@ def validate(mmt_model, val_loader, args, epoch, tokenizer_model, thresholds=Non
             text_input = tokenizer_model(text_input, return_tensors='pt', max_length=args.text_max_len, padding='max_length', truncation=True)
             text_input = text_input.to(device)
             # compute output
-            tav_output = mmt_model(audio_input, video_input, text_input)
+            tav_output, text_layer_pred_results, audio_layer_pred_results, video_layer_pred_results  = mmt_model(audio_input, video_input, text_input)
             # do not use Sigmoid here, use it in the calculate_stats Function
             # predictions = torch.sigmoid(tav_output)
             predictions = tav_output.to('cpu').detach()
@@ -290,8 +295,21 @@ def validate(mmt_model, val_loader, args, epoch, tokenizer_model, thresholds=Non
             labels = labels.to(device)
             if isinstance(args.loss_fn, torch.nn.CrossEntropyLoss):
                 loss = args.loss_fn(tav_output, torch.argmax(labels.long(), axis=1))
+                layer_num = int(text_layer_pred_results.size(0)/tav_output.size(0))
+                layer_labels = labels.unsqueeze(0).expand(layer_num, tav_output.size(0), -1).contiguous().view(text_layer_pred_results.size(0), -1)
+                text_fusion_loss = args.loss_fn(text_layer_pred_results, torch.argmax(layer_labels.long(), axis=1))
+                audio_fusion_loss = args.loss_fn(audio_layer_pred_results, torch.argmax(layer_labels.long(), axis=1))
+                video_fusion_loss = args.loss_fn(video_layer_pred_results, torch.argmax(layer_labels.long(), axis=1))
+                loss += (text_fusion_loss + audio_fusion_loss + video_fusion_loss) * (args.layer_loss_factor)
             else:
                 loss = args.loss_fn(tav_output, labels)
+                layer_num = int(text_layer_pred_results.size(0)/tav_output.size(0))
+                layer_labels = labels.unsqueeze(0).expand(layer_num, tav_output.size(0), -1).contiguous().view(text_layer_pred_results.size(0), -1)
+                text_fusion_loss = args.loss_fn(text_layer_pred_results, layer_labels)
+                audio_fusion_loss = args.loss_fn(audio_layer_pred_results, layer_labels)
+                video_fusion_loss = args.loss_fn(video_layer_pred_results, layer_labels)
+                loss += (text_fusion_loss + audio_fusion_loss + video_fusion_loss) * (args.layer_loss_factor)
+
             A_loss.append(loss.to('cpu').detach())
 
             batch_time.update(time.time() - end)

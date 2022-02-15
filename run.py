@@ -42,6 +42,7 @@ parser.add_argument("--model", type=str, default='ast', help="the model used")
 parser.add_argument("--dataset", type=str, default="iemocap", help="the dataset used", choices=["iemocap", "mosei"])
 parser.add_argument("--modal", type=str, default='tav', help="the modality used")
 
+parser.add_argument("--layer_loss_factor", type=float, default=(1/3), help="layer_loss_factor")
 parser.add_argument("--text_lr_factor", type=int, default=100, help="text_lr_factor")
 parser.add_argument("--exp-dir", type=str, default="exp1202", help="directory to dump experiments")
 parser.add_argument('--lr', '--learning-rate', default=0.0001, type=float, metavar='LR', help='initial learning rate')
@@ -103,15 +104,14 @@ noise = {'mosei': False, 'iemocap': False}
 label_maps = {"mosei": ['anger', 'disgust', 'fear', 'happy', 'sad', 'surprise'],
                   "iemocap": ['ang', 'exc', 'fru', 'hap', 'neu', 'sad']}
 
-conf = {'num_mel_bins': 128, 'num_height':384, 'num_width':384, 'target_length': target_length[args.dataset], 'freqm': args.freqm, 'timem': args.timem, 'mixup': args.mixup, 'dataset': args.dataset, 'mode':'train', 'mean':norm_stats[args.dataset][0], 'std':norm_stats[args.dataset][1],
+conf = {'num_mel_bins': 128, 'num_height':224, 'num_width':224, 'target_length': target_length[args.dataset], 'freqm': args.freqm, 'timem': args.timem, 'mixup': args.mixup, 'dataset': args.dataset, 'mode':'train', 'mean':norm_stats[args.dataset][0], 'std':norm_stats[args.dataset][1],
                   'noise':noise[args.dataset], 'time_dim_split':args.time_dim_split}
-val_conf = {'num_mel_bins': 128, 'num_height':384, 'num_width':384, 'target_length': target_length[args.dataset], 'freqm': 0, 'timem': 0, 'mixup': 0, 'dataset': args.dataset, 'mode':'evaluation', 'mean':norm_stats[args.dataset][0], 'std':norm_stats[args.dataset][1], 'noise':False,
+val_conf = {'num_mel_bins': 128, 'num_height':224, 'num_width':224, 'target_length': target_length[args.dataset], 'freqm': 0, 'timem': 0, 'mixup': 0, 'dataset': args.dataset, 'mode':'evaluation', 'mean':norm_stats[args.dataset][0], 'std':norm_stats[args.dataset][1], 'noise':False,
                 'time_dim_split':args.time_dim_split}
 
 # mtcnn = MTCNN(image_size=args.face_size, margin=0, post_process=False, device="cpu")
 mtcnn = MTCNN(image_size=args.face_size, margin=10, selection_method="probability", post_process=False, device='cpu')
-tokenizer_model = BertTokenizer.from_pretrained("/users10/zyzhang/graduationProject/data/pretrain_model/bert_base_uncased")
-# tokenizer_model = BertTokenizer.from_pretrained("/users5/ywu/MMSA/pretrained_model/bert_en")
+tokenizer_model = BertTokenizer.from_pretrained("/users5/ywu/LLF/pretrained_models/bert_en")
 trainset = dataloader.MultimodalDataset(args.data_train, label_map=label_maps[args.dataset], conf=conf, face_model=mtcnn, face_size=args.face_size, tokenizer_model=tokenizer_model)
 train_loader = torch.utils.data.DataLoader(
     trainset,

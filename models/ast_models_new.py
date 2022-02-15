@@ -1,9 +1,4 @@
 # -*- coding: utf-8 -*-
-# @Time    : 6/10/21 5:04 PM
-# @Author  : Yuan Gong
-# @Affiliation  : Massachusetts Institute of Technology
-# @Email   : yuangong@mit.edu
-# @File    : ast_models.py
 
 from audioop import mul
 import torch
@@ -11,7 +6,7 @@ import torch.nn as nn
 from torch.cuda.amp import autocast
 import os
 import wget
-os.environ['TORCH_HOME'] = '../pretrained_models'
+os.environ['TORCH_HOME'] = '/users5/ywu/LLF/pretrained_models'
 import timm
 import torch.nn.functional as F
 from timm.models.layers import to_2tuple,trunc_normal_
@@ -148,12 +143,10 @@ class VTModel(nn.Module):
     def __init__(self, label_dim=527, fstride=10, tstride=10, input_fdim=128, input_tdim=1024, imagenet_pretrain=True, audioset_pretrain=False, model_size='base384', patch_num=256, verbose=True):
 
         super(VTModel, self).__init__()
-        # self.v = BeitModel.from_pretrained('microsoft/beit-base-patch16-224-pt22k-ft22k')
-        self.v = BeitModel.from_pretrained('/users10/zyzhang/graduationProject/data/pretrain_model/beit-base-patch16-224-pt22k-ft22k')
+        self.v = BeitModel.from_pretrained('/users5/ywu/LLF/pretrained_models/beit-base-patch16-224-pt22k-ft22k')
         self.original_embedding_dim = 768
         self.mlp_head = nn.Sequential(nn.LayerNorm(self.original_embedding_dim), nn.Linear(self.original_embedding_dim, label_dim))
-        # self.feature_extract = BeitFeatureExtractor.from_pretrained("microsoft/beit-base-patch16-224-pt22k-ft22k")
-        self.feature_extract = BeitFeatureExtractor.from_pretrained('/users10/zyzhang/graduationProject/data/pretrain_model/beit-base-patch16-224-pt22k-ft22k')
+        self.feature_extract = BeitFeatureExtractor.from_pretrained('/users5/ywu/LLF/pretrained_models/beit-base-patch16-224-pt22k-ft22k')
 
     def get_shape(self, fstride, tstride, input_fdim=384, input_tdim=384):
         test_input = torch.randn(1, 3, input_fdim, input_tdim)
@@ -171,14 +164,14 @@ class VTModel(nn.Module):
         """
         # expect input x = (batch_size, 3, H, W)
         B = x.shape[0]
-        x=x.cpu().numpy()
-        x=[torch.Tensor(a) for a in x]
+        x = x.cpu().numpy()
+        x = [torch.Tensor(a) for a in x]
         # print('x.shape',x.shape)#[8, 3, 384, 384]
         # print('x[0]',x[0])
         x = self.feature_extract(images=x, return_tensors="pt")
 
         # x = self.v.patch_embed(x)
-        x['pixel_values']=x['pixel_values'].to(torch.device('cuda:0'))
+        x['pixel_values'] = x['pixel_values'].to(torch.device('cuda:0'))
         # print("x['pixel_values']",x['pixel_values'])
         outputs = self.v(**x,output_hidden_states=True)
         last_hidden_state = outputs.last_hidden_state #[8, 197, 768]
@@ -192,7 +185,7 @@ class VTModel(nn.Module):
 class TTModel(nn.Module):
     def __init__(self, num_classes):
         super(TTModel, self).__init__()
-        self.bert = BertModel.from_pretrained("/users10/zyzhang/graduationProject/data/pretrain_model/bert_base_uncased")
+        self.bert = BertModel.from_pretrained("/users5/ywu/LLF/pretrained_models/bert_en")
         self.num_classes = num_classes
         self.mlp_head = nn.Sequential(nn.LayerNorm(768), nn.Linear(768, self.num_classes))
         # self.mlp = nn.Linear(768, self.num_classes)
@@ -243,12 +236,19 @@ class MTModel(nn.Module):
         self.audio_predict = nn.Linear(768, label_dim)
         self.fusion = nn.Linear(768*6, label_dim)
         self.weighted_fusion = nn.Linear(4, 1, bias=False)
-        
+
+        # each fusion step
+        self.layer_classifier_t = nn.Linear(768, label_dim)       
+        self.layer_classifier_a = nn.Linear(768, label_dim)       
+        self.layer_classifier_v = nn.Linear(768, label_dim)       
+
     
-    def interaction(self, mode1, mode2, mode3, map1, linear_a, linear_b, linear_c, attention, layerNorm1, layerNorm2, layerNorm3):
+    def interaction(self, mode1, mode2, mode3, map1, linear_a, linear_b, linear_c, attention, layerNorm1, layerNorm2, layerNorm3, layer_classifier):
         batch_size = mode1.shape[1]
         embedding_size = mode1.shape[3]
-        curr_embedding=torch.randn(batch_size, embedding_size).to(mode1.device)
+        curr_embedding = torch.randn(batch_size, embedding_size).to(mode1.device)
+
+        layer_pred_results = []
 
         for step in range(mode1.shape[0]):
             curr_embedding = self.layerNorm(curr_embedding)
@@ -262,7 +262,6 @@ class MTModel(nn.Module):
             mode3_cls_embedding = layerNorm3(mode3[step, :, 0, :])
             # mode3_cls_embedding.shape torch.Size([8, 768])
             
-
             map1_embedding = self.layerNorm(map1(torch.cat((mode2_cls_embedding,mode3_cls_embedding),1)))
             # map1_embedding.shape torch.Size([8, 768])
             map2_embedding_a = torch.sigmoid(linear_a(torch.cat((map1_embedding, curr_embedding, mode1_cls_embedding),1))) * map1_embedding
@@ -282,7 +281,10 @@ class MTModel(nn.Module):
             # new_t.shape torch.Size([8, 768])
             curr_embedding = new_t + map2_embedding
             curr_embedding = self.layerNorm2(curr_embedding)
-        return curr_embedding
+
+            layer_pred_results.append(layer_classifier(curr_embedding))
+
+        return curr_embedding, torch.cat(layer_pred_results, dim=0)
 
     @autocast()
     def forward(self, audio_input, video_input, text_input):
@@ -291,9 +293,9 @@ class MTModel(nn.Module):
         video_last_hidden_state, video_pooler_output, video_hidden_states = self.video_model(video_input)
         audio_hidden_states = self.audio_model(audio_input)
         
-        text_inte_embedding = self.interaction(text_hidden_states,audio_hidden_states,video_hidden_states,self.text_map1, self.text_map2_text,self.text_map2_audio, self.text_map2_video,self.text_attention, self.layerNorm_text, self.layerNorm_audio, self.layerNorm_video)
-        audio_inte_embedding = self.interaction(audio_hidden_states, text_hidden_states, video_hidden_states, self.audio_map1, self.audio_map2_audio,self.audio_map2_text, self.audio_map2_video,self.audio_attention, self.layerNorm_audio, self.layerNorm_text, self.layerNorm_video)
-        video_inte_embedding = self.interaction(video_hidden_states, text_hidden_states, audio_hidden_states, self.video_map1, self.video_map2_video,self.video_map2_text,self.video_map2_audio,self.video_attention, self.layerNorm_video, self.layerNorm_text, self.layerNorm_audio)
+        text_inte_embedding, text_layer_pred_results = self.interaction(text_hidden_states,audio_hidden_states,video_hidden_states,self.text_map1, self.text_map2_text,self.text_map2_audio, self.text_map2_video,self.text_attention, self.layerNorm_text, self.layerNorm_audio, self.layerNorm_video, self.layer_classifier_t)
+        audio_inte_embedding, audio_layer_pred_results = self.interaction(audio_hidden_states, text_hidden_states, video_hidden_states, self.audio_map1, self.audio_map2_audio,self.audio_map2_text, self.audio_map2_video,self.audio_attention, self.layerNorm_audio, self.layerNorm_text, self.layerNorm_video, self.layer_classifier_a)
+        video_inte_embedding, video_layer_pred_results = self.interaction(video_hidden_states, text_hidden_states, audio_hidden_states, self.video_map1, self.video_map2_video,self.video_map2_text,self.video_map2_audio,self.video_attention, self.layerNorm_video, self.layerNorm_text, self.layerNorm_audio, self.layer_classifier_v)
         text_cls = text_hidden_states[-1, :, 0, :]
         audio_cls = audio_hidden_states[-1, :, 0, :]
         video_cls = video_hidden_states[-1, :, 0, :]
@@ -302,4 +304,4 @@ class MTModel(nn.Module):
         audio_pred = self.audio_predict(audio_cls)
         multimode_pred = self.fusion(torch.cat((text_inte_embedding, text_cls, video_inte_embedding, video_cls, audio_inte_embedding, audio_cls),-1))
         result = self.weighted_fusion(torch.stack((text_pred, video_pred, audio_pred, multimode_pred),-1)).squeeze(-1)
-        return result
+        return result, text_layer_pred_results, audio_layer_pred_results, video_layer_pred_results

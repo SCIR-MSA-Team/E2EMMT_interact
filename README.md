@@ -17,6 +17,6 @@ python run.py --batch-size 8 --time_dim_split True --face_size 128 --v_patch_num
 See generate_slurms.py
 
 ## Results
-See https://docs.qq.com/sheet/DV0phRlV2ek9EeXNL?tab=BB08J2  and https://docs.qq.com/sheet/DV0ZrZlpEeVBabnB3?tab=BB08J2
+See https://docs.qq.com/sheet/DTEFpbFZMWmZESUR6?tab=BB08J2
 
 

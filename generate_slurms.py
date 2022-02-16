@@ -2,11 +2,11 @@ import os
 import random
 
 
-def output_slurm(dataset, pretrained_type, bz, lr, epoch, scale_value, slurm_root_path):
-    gpu_device = random.choice([ 'tesla_v100-sxm2-16gb', 'tesla_v100s-pcie-32gb'])
+def output_slurm(dataset, pretrained_type, bz, lr, epoch, seed, face_size, layer_loss_factor, slurm_root_path):
+    gpu_device = random.choice([ 'tesla_v100-pcie-32gb', 'tesla_v100s-pcie-32gb'])
 
-    job_name = f'{dataset[:2]}_{pretrained_type[:2]}_{bz}_{lr}_{epoch}_{scale_value}'
-    all_name = f'{dataset}_{pretrained_type}_{bz}_{lr}_{epoch}_{scale_value}'
+    job_name = f'{dataset}'
+    all_name = f'{dataset}_{pretrained_type}_{bz}_{lr}_{epoch}_{seed}_{face_size}_{layer_loss_factor}'
     output_path = f'{slurm_root_path}slurm_outs/'
     if not os.path.exists(output_path):
         os.makedirs(output_path)
@@ -25,34 +25,30 @@ def output_slurm(dataset, pretrained_type, bz, lr, epoch, scale_value, slurm_roo
             f"#SBATCH -o {output_file}                            ",
             "#SBATCH -p compute                           ",
             "#SBATCH -N 1                                  ",
-            "#SBATCH -t 12:00:00",
+            "#SBATCH -t 24:00:00",
             f"#SBATCH --gres=gpu:{gpu_device}:{gpu_num}",
             "",
             "source ~/.bashrc",
             "",
-            "source activate gpu12py38",
+            "source /users5/ywu/Env/MMT/bin/activate",
             "",
-            "source  /users/ywu/E2EMT/ast-master/venvast/bin/activate",
-            "",
-            f"python run.py --dataset {dataset} -b {bz} --lr {lr}  --scale {scale_value}  --n-epochs {epoch} --exp-dir {model_path}{all_name} --fstride 16 --tstride 16 -w 12"
+            f"python run.py --batch-size {bz} --time_dim_split True  --layer_loss_factor {layer_loss_factor}  --face_size {face_size}  --exp-dir {model_path}{all_name}  --lr {lr} --n-epochs {epoch}  --a_imagenet_pretrain True --v_imagenet_pretrain True  --fstride 16 --tstride 16 -w 12 --dataset {dataset} --seed {seed}"
         ]
     elif pretrained_type == "scratch":
         slurm_template = [
-        "#!/bin/bash",
-        f"#SBATCH -J {job_name}                         ",
-        f"#SBATCH -o {output_file}                           ",
-        "#SBATCH -p compute                            ",
-        "#SBATCH -N 1                                  ",
-        "#SBATCH -t 12:00:00",
-        f"#SBATCH --gres=gpu:{gpu_device}:{gpu_num}",
-        "",
-        "source ~/.bashrc",
-        "",
-        "source activate gpu12py38",
-        "",
-        "source  /users/ywu/E2EMT/ast-master/venvast/bin/activate",
-        "",
-        f"python run.py --dataset {dataset} -b {bz} --lr {lr} --n-epochs {epoch} --scale {scale_value} --exp-dir {model_path}{all_name} --imagenet_pretrain False --fstride 16 --tstride 16 -w 12"
+            "#!/bin/bash",
+            f"#SBATCH -J {job_name}                               ",
+            f"#SBATCH -o {output_file}                            ",
+            "#SBATCH -p compute                           ",
+            "#SBATCH -N 1                                  ",
+            "#SBATCH -t 24:00:00",
+            f"#SBATCH --gres=gpu:{gpu_device}:{gpu_num}",
+            "",
+            "source ~/.bashrc",
+            "",
+            "source /users5/ywu/Env/MMT/bin/activate",
+            "",
+            f"python run.py --batch-size {bz} --time_dim_split True  --layer_loss_factor {layer_loss_factor}  --face_size {face_size}  --exp-dir {model_path}{all_name}  --lr {lr} --n-epochs {epoch}  --a_imagenet_pretrain False --v_imagenet_pretrain False  --fstride 16 --tstride 16 -w 12 --dataset {dataset} --seed {seed}"
         ]
 
     slurm_path = f'{slurm_root_path}slurms/'
@@ -68,17 +64,17 @@ def output_slurm(dataset, pretrained_type, bz, lr, epoch, scale_value, slurm_roo
 
 if __name__ == '__main__':
     slurm_files = []
-    slurm_root_path = 'slurm_sparse_transform_face128_1230/'
+    slurm_root_path = 'last_six_layer_progressive_0216/'
     bz = 8
     epoch = 40
-
-    # pretrained_type = 'imagenet'
+    lr = 1e-4
+    pretrained_type = 'imagenet'
+    seed = 1234
 
     for dataset in ["mosei", "iemocap"]:
-        for scale_value in [1/(256*256*3)]:
-            for lr in [0.0001]:
-                for pretrained_type in ['imagenet', 'scratch']:
-                    slurm_files.append('sbatch ' + output_slurm(dataset, pretrained_type, bz, lr, epoch, scale_value, slurm_root_path))
+        for layer_loss_factor in [1/3, 1]:
+            for face_size in [64, 128]:
+                slurm_files.append('sbatch ' + output_slurm(dataset, pretrained_type, bz, lr, epoch, seed, face_size, layer_loss_factor, slurm_root_path))
 
-    with open(f'{slurm_root_path}run_slurms_1230.sh', 'w') as f:
-        f.write('\n'.join(slurm_files))
+    with open(f'{slurm_root_path}run_slurms_0216.sh', 'w') as f:
+        f.write('\n'.join(slurm_files) )

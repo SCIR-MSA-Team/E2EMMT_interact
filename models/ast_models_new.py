@@ -124,7 +124,10 @@ class ASTModel(nn.Module):
         x = self.v.norm(x)
         x = (x[:, 0] + x[:, 1]) / 2
         x_out = self.mlp_head(x)
-        hidden_states = torch.stack(hidden_states) #[12, 8, 514, 768]
+        pre_hidden_states = torch.stack(hidden_states) #[12, 8, 514, 768]
+        post_cls = (pre_hidden_states[:, :, 0, :] + pre_hidden_states[:, :, 1, :]) / 2 
+        hidden_states = torch.cat([post_cls.unsqueeze(2), pre_hidden_states[:, :, 2:, :]], 2)
+        assert hidden_states.size(2) == 513
         return hidden_states
 
 
@@ -231,16 +234,18 @@ class MTModel(nn.Module):
         self.video_map2_text = nn.Linear(768*3, 768)
         self.video_map2_audio = nn.Linear(768*3, 768)
         self.video_map2_video = nn.Linear(768*3, 768)
-        self.text_predict = nn.Linear(768, label_dim)
-        self.video_predict = nn.Linear(768, label_dim)
-        self.audio_predict = nn.Linear(768, label_dim)
-        self.fusion = nn.Linear(768*6, label_dim)
+        self.text_predict = nn.Sequential(nn.LayerNorm(768), nn.Linear(768, label_dim))
+        self.video_predict = nn.Sequential(nn.LayerNorm(768), nn.Linear(768, label_dim))
+        self.audio_predict = nn.Sequential(nn.LayerNorm(768), nn.Linear(768, label_dim))
+        self.fusion = nn.Sequential(nn.LayerNorm(768*6), nn.Linear(768*6, label_dim))
         self.weighted_fusion = nn.Linear(4, 1, bias=False)
 
         # each fusion step
-        self.layer_classifier_t = nn.Linear(768, label_dim)       
-        self.layer_classifier_a = nn.Linear(768, label_dim)       
-        self.layer_classifier_v = nn.Linear(768, label_dim)       
+        # self.layer_classifier_t = nn.Linear(768, label_dim)       
+        # self.layer_classifier_a = nn.Linear(768, label_dim)       
+        # self.layer_classifier_v = nn.Linear(768, label_dim)     
+        # force same space  
+        self.layer_classifier = nn.Linear(768, label_dim)  
 
     
     def interaction(self, mode1, mode2, mode3, map1, linear_a, linear_b, linear_c, attention, layerNorm1, layerNorm2, layerNorm3, layer_classifier):
@@ -250,17 +255,14 @@ class MTModel(nn.Module):
 
         layer_pred_results = []
 
-        for step in range(mode1.shape[0]):
+        # last six layers
+        for step in [6, 7, 8, 9, 10, 11]:
+        # for step in range(mode1.shape[0]):
             curr_embedding = self.layerNorm(curr_embedding)
-            # curr_embedding.shape torch.Size([8, 768])
             mode1_cls_embedding = layerNorm1(mode1[step, :, 0, :])
-            # mode1_cls_embedding.shape torch.Size([8, 768])
             mode1_other_embedding = layerNorm1(mode1[step, :, 1:, :])
-            # mode1_other_embedding.shape torch.Size([8, 299, 768])
             mode2_cls_embedding = layerNorm2(mode2[step, :, 0, :])
-            # mode2_cls_embedding.shape torch.Size([8, 768])
             mode3_cls_embedding = layerNorm3(mode3[step, :, 0, :])
-            # mode3_cls_embedding.shape torch.Size([8, 768])
             
             map1_embedding = self.layerNorm(map1(torch.cat((mode2_cls_embedding,mode3_cls_embedding),1)))
             # map1_embedding.shape torch.Size([8, 768])
@@ -289,13 +291,12 @@ class MTModel(nn.Module):
     @autocast()
     def forward(self, audio_input, video_input, text_input):
         text_last_hidden_state, text_pooler_output, text_hidden_states = self.text_model(text_input)
-
         video_last_hidden_state, video_pooler_output, video_hidden_states = self.video_model(video_input)
         audio_hidden_states = self.audio_model(audio_input)
         
-        text_inte_embedding, text_layer_pred_results = self.interaction(text_hidden_states,audio_hidden_states,video_hidden_states,self.text_map1, self.text_map2_text,self.text_map2_audio, self.text_map2_video,self.text_attention, self.layerNorm_text, self.layerNorm_audio, self.layerNorm_video, self.layer_classifier_t)
-        audio_inte_embedding, audio_layer_pred_results = self.interaction(audio_hidden_states, text_hidden_states, video_hidden_states, self.audio_map1, self.audio_map2_audio,self.audio_map2_text, self.audio_map2_video,self.audio_attention, self.layerNorm_audio, self.layerNorm_text, self.layerNorm_video, self.layer_classifier_a)
-        video_inte_embedding, video_layer_pred_results = self.interaction(video_hidden_states, text_hidden_states, audio_hidden_states, self.video_map1, self.video_map2_video,self.video_map2_text,self.video_map2_audio,self.video_attention, self.layerNorm_video, self.layerNorm_text, self.layerNorm_audio, self.layer_classifier_v)
+        text_inte_embedding, text_layer_pred_results = self.interaction(text_hidden_states, audio_hidden_states, video_hidden_states, self.text_map1, self.text_map2_text, self.text_map2_audio, self.text_map2_video, self.text_attention, self.layerNorm_text, self.layerNorm_audio, self.layerNorm_video, self.layer_classifier)
+        audio_inte_embedding, audio_layer_pred_results = self.interaction(audio_hidden_states, text_hidden_states, video_hidden_states, self.audio_map1, self.audio_map2_audio, self.audio_map2_text, self.audio_map2_video, self.audio_attention, self.layerNorm_audio, self.layerNorm_text, self.layerNorm_video, self.layer_classifier)
+        video_inte_embedding, video_layer_pred_results = self.interaction(video_hidden_states, text_hidden_states, audio_hidden_states, self.video_map1, self.video_map2_video, self.video_map2_text, self.video_map2_audio, self.video_attention, self.layerNorm_video, self.layerNorm_text, self.layerNorm_audio, self.layer_classifier)
         text_cls = text_hidden_states[-1, :, 0, :]
         audio_cls = audio_hidden_states[-1, :, 0, :]
         video_cls = video_hidden_states[-1, :, 0, :]

@@ -103,9 +103,9 @@ noise = {'mosei': False, 'iemocap': False}
 label_maps = {"mosei": ['anger', 'disgust', 'fear', 'happy', 'sad', 'surprise'],
                   "iemocap": ['ang', 'exc', 'fru', 'hap', 'neu', 'sad']}
 
-conf = {'num_mel_bins': 128, 'num_height':384, 'num_width':384, 'target_length': target_length[args.dataset], 'freqm': args.freqm, 'timem': args.timem, 'mixup': args.mixup, 'dataset': args.dataset, 'mode':'train', 'mean':norm_stats[args.dataset][0], 'std':norm_stats[args.dataset][1],
+conf = {'num_mel_bins': 128, 'num_height':224, 'num_width':224, 'target_length': target_length[args.dataset], 'freqm': args.freqm, 'timem': args.timem, 'mixup': args.mixup, 'dataset': args.dataset, 'mode':'train', 'mean':norm_stats[args.dataset][0], 'std':norm_stats[args.dataset][1],
                   'noise':noise[args.dataset], 'time_dim_split':args.time_dim_split}
-val_conf = {'num_mel_bins': 128, 'num_height':384, 'num_width':384, 'target_length': target_length[args.dataset], 'freqm': 0, 'timem': 0, 'mixup': 0, 'dataset': args.dataset, 'mode':'evaluation', 'mean':norm_stats[args.dataset][0], 'std':norm_stats[args.dataset][1], 'noise':False,
+val_conf = {'num_mel_bins': 128, 'num_height':224, 'num_width':224, 'target_length': target_length[args.dataset], 'freqm': 0, 'timem': 0, 'mixup': 0, 'dataset': args.dataset, 'mode':'evaluation', 'mean':norm_stats[args.dataset][0], 'std':norm_stats[args.dataset][1], 'noise':False,
                 'time_dim_split':args.time_dim_split}
 
 # mtcnn = MTCNN(image_size=args.face_size, margin=0, post_process=False, device="cpu")

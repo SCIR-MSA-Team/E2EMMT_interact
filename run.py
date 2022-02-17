@@ -18,7 +18,7 @@ basepath = os.path.dirname(os.path.dirname(sys.path[0]))
 sys.path.append(basepath)
 print('basepath',basepath)
 import dataloader
-import models
+from models import ast_models_new, only_video, video_text, ast_models_video_deit 
 import numpy as np
 from traintest import train, validate
 from tabulate import tabulate
@@ -74,6 +74,8 @@ parser.add_argument('--a_imagenet_pretrain', help='if use ImageNet pretrained au
 parser.add_argument('--audioset_pretrain', help='if use ImageNet and audioset pretrained audio spectrogram transformer model', type=ast.literal_eval, default='False')
 parser.add_argument('--time_dim_split', help='if use time-dim split', type=ast.literal_eval, default='True')
 parser.add_argument("--seed",type=int,required=True)
+parser.add_argument('--num_height', required=True, type=int)
+parser.add_argument('--num_width',required=True,type=int)
 
 args = parser.parse_args()
 seed = args.seed
@@ -103,9 +105,9 @@ noise = {'mosei': False, 'iemocap': False}
 label_maps = {"mosei": ['anger', 'disgust', 'fear', 'happy', 'sad', 'surprise'],
                   "iemocap": ['ang', 'exc', 'fru', 'hap', 'neu', 'sad']}
 
-conf = {'num_mel_bins': 128, 'num_height':224, 'num_width':224, 'target_length': target_length[args.dataset], 'freqm': args.freqm, 'timem': args.timem, 'mixup': args.mixup, 'dataset': args.dataset, 'mode':'train', 'mean':norm_stats[args.dataset][0], 'std':norm_stats[args.dataset][1],
+conf = {'num_mel_bins': 128, 'num_height': args.num_height, 'num_width': args.num_width, 'target_length': target_length[args.dataset], 'freqm': args.freqm, 'timem': args.timem, 'mixup': args.mixup, 'dataset': args.dataset, 'mode':'train', 'mean':norm_stats[args.dataset][0], 'std':norm_stats[args.dataset][1],
                   'noise':noise[args.dataset], 'time_dim_split':args.time_dim_split}
-val_conf = {'num_mel_bins': 128, 'num_height':224, 'num_width':224, 'target_length': target_length[args.dataset], 'freqm': 0, 'timem': 0, 'mixup': 0, 'dataset': args.dataset, 'mode':'evaluation', 'mean':norm_stats[args.dataset][0], 'std':norm_stats[args.dataset][1], 'noise':False,
+val_conf = {'num_mel_bins': 128, 'num_height': args.num_height, 'num_width': args.num_width, 'target_length': target_length[args.dataset], 'freqm': 0, 'timem': 0, 'mixup': 0, 'dataset': args.dataset, 'mode':'evaluation', 'mean':norm_stats[args.dataset][0], 'std':norm_stats[args.dataset][1], 'noise':False,
                 'time_dim_split':args.time_dim_split}
 
 # mtcnn = MTCNN(image_size=args.face_size, margin=0, post_process=False, device="cpu")
@@ -125,32 +127,43 @@ val_loader = torch.utils.data.DataLoader(
 # transformer based model
 if args.model == 'ast':
     print('now train a audio spectrogram transformer model')
-    audio_model = models.ASTModel(label_dim=args.n_class, fstride=args.fstride, tstride=args.tstride, input_fdim=128,
+    audio_model = ast_models_new.ASTModel(label_dim=args.n_class, fstride=args.fstride, tstride=args.tstride, input_fdim=128,
                                   input_tdim=target_length[args.dataset], imagenet_pretrain=args.a_imagenet_pretrain,
                                   audioset_pretrain=False, model_size='base384', patch_num=args.a_patch_num)
 
-    video_model = models.VTModel(label_dim=args.n_class, fstride=args.fstride, tstride=args.tstride, input_fdim=384,
-                                  input_tdim=384, imagenet_pretrain=args.v_imagenet_pretrain,
+    video_model = ast_models_new.VTModel(label_dim=args.n_class, fstride=args.fstride, tstride=args.tstride, input_fdim=args.num_height,
+                                  input_tdim=args.num_width, imagenet_pretrain=args.v_imagenet_pretrain,
                                   audioset_pretrain=False, model_size='base384', patch_num=args.v_patch_num)
 
-    text_model = models.TTModel(num_classes=args.n_class)
+    text_model = ast_models_new.TTModel(num_classes=args.n_class)
 
-    mt_model = models.MTModel(args.n_class, audio_model, video_model, text_model)
+    mt_model = ast_models_new.MTModel(args.n_class, audio_model, video_model, text_model)
 
     args.PosWeight = trainset.getPosWeight()
 elif args.model == 'only_video':
-    video_model = models.VTModel(label_dim=args.n_class, fstride=args.fstride, tstride=args.tstride, input_fdim=384,
-                                  input_tdim=384, imagenet_pretrain=args.v_imagenet_pretrain,
+    video_model = only_video.VTModel(label_dim=args.n_class, fstride=args.fstride, tstride=args.tstride, input_fdim=args.num_height,
+                                  input_tdim=args.num_width, imagenet_pretrain=args.v_imagenet_pretrain,
                                   audioset_pretrain=False, model_size='base384', patch_num=args.v_patch_num)
-    mt_model = models.only_video(args.n_class,video_model)
+    mt_model = only_video.only_video(args.n_class,video_model)
 elif args.model == 'video_text':
-    video_model = models.VTModel(label_dim=args.n_class, fstride=args.fstride, tstride=args.tstride, input_fdim=384,
-                                  input_tdim=384, imagenet_pretrain=args.v_imagenet_pretrain,
+    video_model = video_text.VTModel(label_dim=args.n_class, fstride=args.fstride, tstride=args.tstride, input_fdim=args.num_height,
+                                  input_tdim=args.num_width, imagenet_pretrain=args.v_imagenet_pretrain,
                                   audioset_pretrain=False, model_size='base384', patch_num=args.v_patch_num)
 
-    text_model = models.TTModel(num_classes=args.n_class)
-    mt_model = models.video_text(label_dim=args.n_class, audio_model=None, video_model=video_model, text_model=text_model)
+    text_model = video_text.TTModel(num_classes=args.n_class)
+    mt_model = video_text.video_text(label_dim=args.n_class, audio_model=None, video_model=video_model, text_model=text_model)
+elif args.model == 'ast_model_video_deit':
+    audio_model = ast_models_video_deit.ASTModel(label_dim=args.n_class, fstride=args.fstride, tstride=args.tstride, input_fdim=128,
+                                  input_tdim=target_length[args.dataset], imagenet_pretrain=args.a_imagenet_pretrain,
+                                  audioset_pretrain=False, model_size='base384', patch_num=args.a_patch_num)
 
+    video_model = ast_models_video_deit.VTModel_deit(label_dim=args.n_class, fstride=args.fstride, tstride=args.tstride, input_fdim=args.num_height,
+                                  input_tdim=args.num_width, imagenet_pretrain=args.v_imagenet_pretrain,
+                                  audioset_pretrain=False, model_size='base384', patch_num=args.v_patch_num)
+
+    text_model = ast_models_video_deit.TTModel(num_classes=args.n_class)
+
+    mt_model = ast_models_video_deit.MTModel(label_dim=args.n_class, audio_model=audio_model, video_model=video_model, text_model=text_model)
 
 if args.n_epochs > 0:
     print("\nCreating experiment directory: %s" % args.exp_dir)

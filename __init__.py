@@ -8,3 +8,4 @@
 from .ast_models_new import *
 from .only_video import *
 from .video_text import *
+from .ast_models_video_deit import *

@@ -100,7 +100,7 @@ class only_video(nn.Module):
         self.predict = nn.Linear(768, label_dim)
         
         
-    # @autocast()
+    @autocast()
     def forward(self, audio_input, video_input, text_input):
         video_last_hidden_state, video_pooler_output, video_hidden_states = self.video_model(video_input)
         cls_embedding = video_last_hidden_state[:, 0, :]

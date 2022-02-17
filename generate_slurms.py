@@ -3,7 +3,7 @@ import random
 
 
 def output_slurm(dataset, pretrained_type, bz, lr, epoch, seed, face_size, layer_loss_factor, slurm_root_path):
-    gpu_device = random.choice([ 'tesla_v100-pcie-32gb', 'tesla_v100s-pcie-32gb'])
+    gpu_device = random.choice(['tesla_v100s-pcie-32gb'])
 
     job_name = f'{dataset}'
     all_name = f'{dataset}_{pretrained_type}_{bz}_{lr}_{epoch}_{seed}_{face_size}_{layer_loss_factor}'
@@ -64,7 +64,7 @@ def output_slurm(dataset, pretrained_type, bz, lr, epoch, seed, face_size, layer
 
 if __name__ == '__main__':
     slurm_files = []
-    slurm_root_path = 'last_six_layer_progressive_0216/'
+    slurm_root_path = 'iter_loss_progressive_0217/'
     bz = 8
     epoch = 40
     lr = 1e-4
@@ -72,9 +72,9 @@ if __name__ == '__main__':
     seed = 1234
 
     for dataset in ["mosei", "iemocap"]:
-        for layer_loss_factor in [1/3, 1]:
+        for layer_loss_factor in [1]:
             for face_size in [64, 128]:
                 slurm_files.append('sbatch ' + output_slurm(dataset, pretrained_type, bz, lr, epoch, seed, face_size, layer_loss_factor, slurm_root_path))
 
-    with open(f'{slurm_root_path}run_slurms_0216.sh', 'w') as f:
+    with open(f'{slurm_root_path}run_slurms_0217.sh', 'w') as f:
         f.write('\n'.join(slurm_files) )

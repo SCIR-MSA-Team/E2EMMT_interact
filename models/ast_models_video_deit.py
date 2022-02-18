@@ -217,13 +217,10 @@ class VTModel_deit(nn.Module):
 
         B = x.shape[0]
         x = self.v.patch_embed(x)
-        print('x.shape',x.shape)
         # -1 means do not change
         cls_tokens = self.v.cls_token.expand(B, -1, -1)
         dist_token = self.v.dist_token.expand(B, -1, -1)
         x = torch.cat((cls_tokens, dist_token, x), dim=1)
-        print('x.shape',x.shape)#([8, 198, 768])
-        print('self.v.pos_emb',self.v.pos_embed.shape)#([1, 194, 768])
         x = x + self.v.pos_embed
         x = self.v.pos_drop(x)
         hidden_states = []

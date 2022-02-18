@@ -114,8 +114,6 @@ def train(mmt_model, train_loader, test_loader, args, tokenizer_model):
             text_input = tokenizer_model(text_input, return_tensors='pt', max_length=args.text_max_len, padding='max_length', truncation=True)
             text_input = text_input.to(device)
 
-
-
             labels = labels.to(device, non_blocking=True)
 
             data_time.update(time.time() - end_time)
@@ -129,9 +127,57 @@ def train(mmt_model, train_loader, test_loader, args, tokenizer_model):
                     param_group['lr'] = warm_lr
                 print('warm-up learning rate is {:f}'.format(optimizer.param_groups[0]['lr']))
 
+            t_scale = 0.07 
             with autocast():
-                tav_output, text_layer_pred_results, audio_layer_pred_results, video_layer_pred_results = mmt_model(audio_input, video_input, text_input)
+                tav_output, text_layer_pred_results, audio_layer_pred_results, video_layer_pred_results, text_cls, audio_cls, video_cls = mmt_model(audio_input, video_input, text_input)
                 loss = loss_fn(tav_output, labels)
+                # contrastive learning
+                label_similarity = torch.mm(labels, labels.transpose(0, 1))
+                text_audio_similarity = torch.bmm(text_cls, audio_cls.transpose(1, 2)) / t_scale
+                text_video_similarity = torch.bmm(text_cls, video_cls.transpose(1, 2)) / t_scale
+                audio_video_similarity = torch.bmm(audio_cls, video_cls.transpose(1, 2)) / t_scale
+
+                text_audio_similarity = text_audio_similarity - torch.max(text_audio_similarity, dim=2, keepdim=True)[0]
+                text_video_similarity = text_video_similarity - torch.max(text_video_similarity, dim=2, keepdim=True)[0]
+                audio_video_similarity = audio_video_similarity - torch.max(audio_video_similarity, dim=2, keepdim=True)[0]
+
+                text_audio_similarity = torch.exp(text_audio_similarity)
+                text_video_similarity = torch.exp(text_video_similarity)
+                audio_video_similarity = torch.exp(audio_video_similarity)
+
+                # print(label_similarity)
+                
+                contrastive_loss = None
+                # layer * batch * batch
+                for layer_i in range(text_audio_similarity.size(0)):
+                    for batch_j in range(text_audio_similarity.size(1)):
+                        mask = label_similarity[batch_j].eq(0)
+                        # print(mask)
+                        tas = torch.masked_select(text_audio_similarity[layer_i][batch_j], mask)
+                        closs = -torch.log(text_audio_similarity[layer_i][batch_j][batch_j] / (torch.sum(tas) + 1e-30))
+                        if contrastive_loss is None:
+                            contrastive_loss = closs
+                        else:
+                            contrastive_loss += closs
+                        # print(text_audio_similarity[i][j][j], tas, torch.sum(tas))
+                        # print(closs)
+
+                        tas = torch.masked_select(text_video_similarity[layer_i][batch_j], mask)
+                        closs = -torch.log(text_video_similarity[layer_i][batch_j][batch_j] / (torch.sum(tas) + 1e-30))
+                        contrastive_loss += closs
+                        # print(text_video_similarity[i][j][j], tas, torch.sum(tas))
+                        # print(closs)
+
+                        tas = torch.masked_select(audio_video_similarity[layer_i][batch_j], mask)
+                        closs = -torch.log(audio_video_similarity[layer_i][batch_j][batch_j] / (torch.sum(tas) + 1e-30))
+                        contrastive_loss += closs      
+                        # print(audio_video_similarity[i][j][j], tas, torch.sum(tas))   
+                        # print(closs)    
+
+                        # exit()
+
+                contrastive_loss = contrastive_loss / (text_audio_similarity.size(0) * text_audio_similarity.size(1) * 3)
+
                 # iter loss
                 text_iter_loss = None
                 audio_iter_loss = None
@@ -149,7 +195,6 @@ def train(mmt_model, train_loader, test_loader, args, tokenizer_model):
                         text_iter_loss = margin_loss_fn(current_results, pre_results, torch.ones(pre_results.size(0)).cuda())
                     else:
                         text_iter_loss += margin_loss_fn(current_results, pre_results, torch.ones(pre_results.size(0)).cuda())
-
 
                     pre_selected_candidate = torch.sigmoid(audio_layer_pred_results[layer-1])
                     current_selected_candidate = torch.sigmoid(audio_layer_pred_results[layer])
@@ -171,7 +216,7 @@ def train(mmt_model, train_loader, test_loader, args, tokenizer_model):
                     else:
                         video_iter_loss += margin_loss_fn(current_results, pre_results, torch.ones(pre_results.size(0)).cuda())
 
-                loss += (text_iter_loss + audio_iter_loss + video_iter_loss) * (args.layer_loss_factor)
+                loss += (text_iter_loss + audio_iter_loss + video_iter_loss) * (args.layer_loss_factor) + contrastive_loss * args.constrastive_loss_factor
 
             # optimization if amp is not used
             # optimizer.zero_grad()
@@ -304,6 +349,7 @@ def validate(mmt_model, val_loader, args, epoch, tokenizer_model, thresholds=Non
     A_predictions = []
     A_targets = []
     A_loss = []
+    t_scale = 0.07 
     with torch.no_grad():
         for i, (audio_input, video_input, text_input, labels) in enumerate(val_loader):
             audio_input = audio_input.to(device)
@@ -311,7 +357,7 @@ def validate(mmt_model, val_loader, args, epoch, tokenizer_model, thresholds=Non
             text_input = tokenizer_model(text_input, return_tensors='pt', max_length=args.text_max_len, padding='max_length', truncation=True)
             text_input = text_input.to(device)
             # compute output
-            tav_output, text_layer_pred_results, audio_layer_pred_results, video_layer_pred_results  = mmt_model(audio_input, video_input, text_input)
+            tav_output, text_layer_pred_results, audio_layer_pred_results, video_layer_pred_results, text_cls, audio_cls, video_cls  = mmt_model(audio_input, video_input, text_input)
             # do not use Sigmoid here, use it in the calculate_stats Function
             # predictions = torch.sigmoid(tav_output)
             predictions = tav_output.to('cpu').detach()
@@ -322,6 +368,40 @@ def validate(mmt_model, val_loader, args, epoch, tokenizer_model, thresholds=Non
             # compute the loss
             labels = labels.to(device)
             loss = args.loss_fn(tav_output, labels)
+
+
+            # # contrastive learning
+            # label_similarity = torch.mm(labels, labels.transpose(0, 1))
+            # text_audio_similarity = torch.bmm(text_cls, audio_cls.transpose(1, 2)) / t_scale
+            # text_video_similarity = torch.bmm(text_cls, video_cls.transpose(1, 2)) / t_scale
+            # audio_video_similarity = torch.bmm(audio_cls, video_cls.transpose(1, 2)) / t_scale
+
+            # text_audio_similarity = text_audio_similarity - torch.max(text_audio_similarity, dim=2, keepdim=True)[0]
+            # text_video_similarity = text_video_similarity - torch.max(text_video_similarity, dim=2, keepdim=True)[0]
+            # audio_video_similarity = audio_video_similarity - torch.max(audio_video_similarity, dim=2, keepdim=True)[0]
+            # contrastive_loss = None
+            # # layer * batch * batch
+            # for layer_i in range(text_audio_similarity.size(0)):
+            #     for batch_j in range(text_audio_similarity.size(1)):
+            #         mask = label_similarity[batch_j].eq(0)
+            #         tas = torch.masked_select(text_audio_similarity[layer_i][batch_j], mask)
+            #         closs = -torch.log(text_audio_similarity[layer_i][batch_j][batch_j] / (torch.sum(tas) + 1e-30))
+            #         if contrastive_loss is None:
+            #             contrastive_loss = closs
+            #         else:
+            #             contrastive_loss += closs
+
+            #         tas = torch.masked_select(text_video_similarity[layer_i][batch_j], mask)
+            #         closs = -torch.log(text_video_similarity[layer_i][batch_j][batch_j] / (torch.sum(tas) + 1e-30))
+            #         contrastive_loss += closs
+
+            #         tas = torch.masked_select(audio_video_similarity[layer_i][batch_j], mask)
+            #         closs = -torch.log(audio_video_similarity[layer_i][batch_j][batch_j] / (torch.sum(tas) + 1e-30))
+            #         contrastive_loss += closs             
+
+            # contrastive_loss = contrastive_loss / (text_audio_similarity.size(0) * text_audio_similarity.size(1) * 3)
+
+
             # iter loss
             text_iter_loss = None
             audio_iter_loss = None
@@ -361,7 +441,8 @@ def validate(mmt_model, val_loader, args, epoch, tokenizer_model, thresholds=Non
                 else:
                     video_iter_loss += margin_loss_fn(current_results, pre_results, torch.ones(pre_results.size(0)).cuda())
 
-            loss += (text_iter_loss + audio_iter_loss + video_iter_loss) * (args.layer_loss_factor)
+            loss += (text_iter_loss + audio_iter_loss + video_iter_loss) * (args.layer_loss_factor) 
+            # + contrastive_loss * args.constrastive_loss_factor
 
             A_loss.append(loss.to('cpu').detach())
 

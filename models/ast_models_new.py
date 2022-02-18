@@ -247,6 +247,10 @@ class MTModel(nn.Module):
         # force same space  
         # self.layer_classifier = nn.Linear(768, label_dim)  
 
+        self.contrastive_head_t = nn.Sequential(nn.LayerNorm(768), nn.Linear(768, 768))
+        self.contrastive_head_a = nn.Sequential(nn.LayerNorm(768), nn.Linear(768, 768))
+        self.contrastive_head_v = nn.Sequential(nn.LayerNorm(768), nn.Linear(768, 768))
+
     
     def interaction(self, mode1, mode2, mode3, map1, linear_a, linear_b, linear_c, attention, layerNorm1, layerNorm2, layerNorm3, layer_classifier):
         batch_size = mode1.shape[1]
@@ -305,4 +309,4 @@ class MTModel(nn.Module):
         audio_pred = self.audio_predict(audio_cls)
         multimode_pred = self.fusion(torch.cat((text_inte_embedding, text_cls, video_inte_embedding, video_cls, audio_inte_embedding, audio_cls),-1))
         result = self.weighted_fusion(torch.stack((text_pred, video_pred, audio_pred, multimode_pred),-1)).squeeze(-1)
-        return result, text_layer_pred_results, audio_layer_pred_results, video_layer_pred_results
+        return result, text_layer_pred_results, audio_layer_pred_results, video_layer_pred_results, F.normalize(self.contrastive_head_t(text_hidden_states[:, :, 0, :]), dim=-1), F.normalize(self.contrastive_head_a(audio_hidden_states[:, :, 0, :]), dim=-1), F.normalize(self.contrastive_head_v(video_hidden_states[:, :, 0, :]), dim=-1)

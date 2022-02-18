@@ -42,6 +42,7 @@ parser.add_argument("--model", type=str, default='ast', help="the model used")
 parser.add_argument("--dataset", type=str, default="iemocap", help="the dataset used", choices=["iemocap", "mosei"])
 parser.add_argument("--modal", type=str, default='tav', help="the modality used")
 
+parser.add_argument("--constrastive_loss_factor", type=float, default=0.25, help="layer_loss_factor")
 parser.add_argument("--layer_loss_factor", type=float, default=(1/3), help="layer_loss_factor")
 parser.add_argument("--text_lr_factor", type=int, default=100, help="text_lr_factor")
 parser.add_argument("--exp-dir", type=str, default="exp1202", help="directory to dump experiments")

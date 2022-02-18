@@ -64,7 +64,7 @@ def output_slurm(dataset, pretrained_type, bz, lr, epoch, seed, face_size, layer
 
 if __name__ == '__main__':
     slurm_files = []
-    slurm_root_path = 'iter_loss_progressive_0217/'
+    slurm_root_path = 'iter_contrastive_loss_progressive_0217/'
     bz = 8
     epoch = 40
     lr = 1e-4

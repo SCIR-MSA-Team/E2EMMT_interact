@@ -41,6 +41,7 @@ parser.add_argument("--n_class", type=int, default=6, help="number of classes")
 parser.add_argument("--model", type=str, default='ast', help="the model used")
 parser.add_argument("--dataset", type=str, default="iemocap", help="the dataset used", choices=["iemocap", "mosei"])
 parser.add_argument("--modal", type=str, default='tav', help="the modality used")
+parser.add_argument('--search', action='store_true', help="search for best hyper-parameter")
 
 parser.add_argument("--constrastive_loss_factor", type=float, default=0.25, help="layer_loss_factor")
 parser.add_argument("--layer_loss_factor", type=float, default=(1/3), help="layer_loss_factor")
@@ -75,7 +76,7 @@ parser.add_argument('--v_imagenet_pretrain', help='if use ImageNet pretrained au
 parser.add_argument('--a_imagenet_pretrain', help='if use ImageNet pretrained audio spectrogram transformer model', type=ast.literal_eval, default='True')
 parser.add_argument('--audioset_pretrain', help='if use ImageNet and audioset pretrained audio spectrogram transformer model', type=ast.literal_eval, default='False')
 parser.add_argument('--time_dim_split', help='if use time-dim split', type=ast.literal_eval, default='True')
-parser.add_argument("--seed",type=int,required=True)
+parser.add_argument("--seed", type=int, required=True)
 
 args = parser.parse_args()
 seed = args.seed
@@ -87,11 +88,18 @@ torch.backends.cudnn.benchmark = False
 if args.dataset == 'mosei':
     args.data_train = 'train_mosei_dataset.json'
     args.data_val =  'valid_mosei_dataset.json'
-    args.data_eval = 'test_mosei_dataset.json'
+    if args.search:
+        args.data_eval = 'valid_mosei_dataset.json'
+    else:
+        args.data_eval = 'test_mosei_dataset.json'
+
 elif args.dataset == 'iemocap':
     args.data_train = 'train_iemocap_dataset.json'
     args.data_val =  'valid_iemocap_dataset.json'
-    args.data_eval = 'test_iemocap_dataset.json'
+    if args.search:
+        args.data_val =  'valid_iemocap_dataset.json'
+    else:
+        args.data_eval = 'test_iemocap_dataset.json'
 
 print('args.batch_size',args.batch_size)
 print('args',args)

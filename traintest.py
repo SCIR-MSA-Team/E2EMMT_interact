@@ -146,7 +146,6 @@ def train(mmt_model, train_loader, test_loader, args, tokenizer_model):
                 audio_video_similarity = torch.exp(audio_video_similarity)
 
                 # print(label_similarity)
-                
                 contrastive_loss = None
                 # layer * batch * batch
                 for layer_i in range(text_audio_similarity.size(0)):
@@ -191,30 +190,42 @@ def train(mmt_model, train_loader, test_loader, args, tokenizer_model):
                     # 1D
                     pre_results = torch.masked_select(pre_selected_candidate, mask)
                     current_results = torch.masked_select(current_selected_candidate, mask)
+                    pre_other_results = torch.masked_select(pre_selected_candidate, ~mask)
+                    current_other_results = torch.masked_select(current_selected_candidate, ~mask)
                     if text_iter_loss is None:
                         text_iter_loss = margin_loss_fn(current_results, pre_results, torch.ones(pre_results.size(0)).cuda())
+                        text_iter_loss += margin_loss_fn(pre_other_results, current_other_results, torch.ones(pre_other_results.size(0)).cuda())
                     else:
                         text_iter_loss += margin_loss_fn(current_results, pre_results, torch.ones(pre_results.size(0)).cuda())
-
+                        text_iter_loss += margin_loss_fn(pre_other_results, current_other_results, torch.ones(pre_other_results.size(0)).cuda())
+            
                     pre_selected_candidate = torch.sigmoid(audio_layer_pred_results[layer-1])
                     current_selected_candidate = torch.sigmoid(audio_layer_pred_results[layer])
                     # 1D
                     pre_results = torch.masked_select(pre_selected_candidate, mask)
                     current_results = torch.masked_select(current_selected_candidate, mask)
+                    pre_other_results = torch.masked_select(pre_selected_candidate, ~mask)
+                    current_other_results = torch.masked_select(current_selected_candidate, ~mask)
                     if audio_iter_loss is None:
                         audio_iter_loss = margin_loss_fn(current_results, pre_results, torch.ones(pre_results.size(0)).cuda())
+                        audio_iter_loss += margin_loss_fn(pre_other_results, current_other_results, torch.ones(pre_other_results.size(0)).cuda())
                     else:
                         audio_iter_loss += margin_loss_fn(current_results, pre_results, torch.ones(pre_results.size(0)).cuda())
+                        audio_iter_loss += margin_loss_fn(pre_other_results, current_other_results, torch.ones(pre_other_results.size(0)).cuda())
 
                     pre_selected_candidate = torch.sigmoid(video_layer_pred_results[layer-1])
                     current_selected_candidate = torch.sigmoid(video_layer_pred_results[layer])
                     # 1D
                     pre_results = torch.masked_select(pre_selected_candidate, mask)
                     current_results = torch.masked_select(current_selected_candidate, mask)
+                    pre_other_results = torch.masked_select(pre_selected_candidate, ~mask)
+                    current_other_results = torch.masked_select(current_selected_candidate, ~mask)
                     if video_iter_loss is None:
                         video_iter_loss = margin_loss_fn(current_results, pre_results, torch.ones(pre_results.size(0)).cuda())
+                        video_iter_loss += margin_loss_fn(pre_other_results, current_other_results, torch.ones(pre_other_results.size(0)).cuda())
                     else:
                         video_iter_loss += margin_loss_fn(current_results, pre_results, torch.ones(pre_results.size(0)).cuda())
+                        video_iter_loss += margin_loss_fn(pre_other_results, current_other_results, torch.ones(pre_other_results.size(0)).cuda())
 
                 loss += (text_iter_loss + audio_iter_loss + video_iter_loss) * (args.layer_loss_factor) + contrastive_loss * args.constrastive_loss_factor
 
@@ -358,6 +369,22 @@ def validate(mmt_model, val_loader, args, epoch, tokenizer_model, thresholds=Non
             text_input = text_input.to(device)
             # compute output
             tav_output, text_layer_pred_results, audio_layer_pred_results, video_layer_pred_results, text_cls, audio_cls, video_cls  = mmt_model(audio_input, video_input, text_input)
+            
+            
+            # # analysis
+            # labels = labels.to(device)
+            # print(labels)
+            # print(tav_output)
+
+            # print([torch.mean(tp) for tp in text_layer_pred_results])
+            # print([torch.mean(tp) for tp in video_layer_pred_results])
+            # print([torch.mean(tp) for tp in audio_layer_pred_results])
+            # print([tp * labels for tp in text_layer_pred_results])
+            # print([tp * labels for tp in video_layer_pred_results])
+            # print([tp * labels for tp in audio_layer_pred_results])
+
+            # exit()
+            
             # do not use Sigmoid here, use it in the calculate_stats Function
             # predictions = torch.sigmoid(tav_output)
             predictions = tav_output.to('cpu').detach()
@@ -382,31 +409,42 @@ def validate(mmt_model, val_loader, args, epoch, tokenizer_model, thresholds=Non
                 # 1D
                 pre_results = torch.masked_select(pre_selected_candidate, mask)
                 current_results = torch.masked_select(current_selected_candidate, mask)
+                pre_other_results = torch.masked_select(pre_selected_candidate, ~mask)
+                current_other_results = torch.masked_select(current_selected_candidate, ~mask)
                 if text_iter_loss is None:
                     text_iter_loss = margin_loss_fn(current_results, pre_results, torch.ones(pre_results.size(0)).cuda())
+                    text_iter_loss += margin_loss_fn(pre_other_results, current_other_results, torch.ones(pre_other_results.size(0)).cuda())
                 else:
                     text_iter_loss += margin_loss_fn(current_results, pre_results, torch.ones(pre_results.size(0)).cuda())
-
-
+                    text_iter_loss += margin_loss_fn(pre_other_results, current_other_results, torch.ones(pre_other_results.size(0)).cuda())
+     
                 pre_selected_candidate = torch.sigmoid(audio_layer_pred_results[layer-1])
                 current_selected_candidate = torch.sigmoid(audio_layer_pred_results[layer])
                 # 1D
                 pre_results = torch.masked_select(pre_selected_candidate, mask)
                 current_results = torch.masked_select(current_selected_candidate, mask)
+                pre_other_results = torch.masked_select(pre_selected_candidate, ~mask)
+                current_other_results = torch.masked_select(current_selected_candidate, ~mask)
                 if audio_iter_loss is None:
                     audio_iter_loss = margin_loss_fn(current_results, pre_results, torch.ones(pre_results.size(0)).cuda())
+                    audio_iter_loss += margin_loss_fn(pre_other_results, current_other_results, torch.ones(pre_other_results.size(0)).cuda())
                 else:
                     audio_iter_loss += margin_loss_fn(current_results, pre_results, torch.ones(pre_results.size(0)).cuda())
+                    audio_iter_loss += margin_loss_fn(pre_other_results, current_other_results, torch.ones(pre_other_results.size(0)).cuda())
 
                 pre_selected_candidate = torch.sigmoid(video_layer_pred_results[layer-1])
                 current_selected_candidate = torch.sigmoid(video_layer_pred_results[layer])
                 # 1D
                 pre_results = torch.masked_select(pre_selected_candidate, mask)
                 current_results = torch.masked_select(current_selected_candidate, mask)
+                pre_other_results = torch.masked_select(pre_selected_candidate, ~mask)
+                current_other_results = torch.masked_select(current_selected_candidate, ~mask)
                 if video_iter_loss is None:
                     video_iter_loss = margin_loss_fn(current_results, pre_results, torch.ones(pre_results.size(0)).cuda())
+                    video_iter_loss += margin_loss_fn(pre_other_results, current_other_results, torch.ones(pre_other_results.size(0)).cuda())
                 else:
                     video_iter_loss += margin_loss_fn(current_results, pre_results, torch.ones(pre_results.size(0)).cuda())
+                    video_iter_loss += margin_loss_fn(pre_other_results, current_other_results, torch.ones(pre_other_results.size(0)).cuda())
 
             loss += (text_iter_loss + audio_iter_loss + video_iter_loss) * (args.layer_loss_factor) 
             # + contrastive_loss * args.constrastive_loss_factor

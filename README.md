@@ -19,4 +19,9 @@ See generate_slurms.py
 ## Results
 See https://docs.qq.com/sheet/DTEFpbFZMWmZESUR6?tab=BB08J2
 
-
+## 消融实验(To do)
+- 去掉interact部分代码，只用3个cls predict的结果+3个cls的cat predict结果
+- 调研某一层的重要性：
+    - 从最后一层倒着向前选择1层，2层，3层看实验结果
+    - 在12层中去掉第1层，第2层，，，看实验结果
+- TA，TV，AV实验结果

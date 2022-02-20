@@ -3,7 +3,7 @@ import random
 
 
 def output_slurm(dataset, pretrained_type, bz, lr, epoch, seed, face_size, layer_loss_factor, constrastive_loss_factor, slurm_root_path):
-    gpu_device = random.choice(['tesla_v100s-pcie-32gb'])
+    gpu_device = random.choice(['tesla_v100s-pcie-32gb', 'tesla_v100-sxm2-16gb'])
 
     job_name = f'{dataset}'
     all_name = f'{dataset}_{pretrained_type}_{bz}_{lr}_{epoch}_{seed}_{face_size}_{layer_loss_factor}_{constrastive_loss_factor}'
@@ -64,7 +64,7 @@ def output_slurm(dataset, pretrained_type, bz, lr, epoch, seed, face_size, layer
 
 if __name__ == '__main__':
     slurm_files = []
-    slurm_root_path = 'iter_contrastive_loss_progressive_0218/'
+    slurm_root_path = 'pull_push_iter_contrastive_loss_progressive_search_0218/'
     bz = 8
     epoch = 40
     pretrained_type = 'imagenet'

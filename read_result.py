@@ -10,19 +10,20 @@ def cal(values):
 if __name__=='__main__':
     parser=argparse.ArgumentParser()
     parser.add_argument('--dataset',required=True,type=str)
-    parser.add_argument('--lr',required=True,type=str)
-    parser.add_argument('--batch_size',required=True,type=int)
+    parser.add_argument('--model',required=True,type=str)
+    # parser.add_argument('--batch_size',required=True,type=int)
     # parser.add_argument('--tds',required=True,type=str)
     args=parser.parse_args()
     print('args',args)
     print('args.dataset',args.dataset)
-    data=pd.DataFrame(columns=['seed','lr','batch_size','acc','f1'])
-    save_path='./extractDataFile/{}_lr_{}_batch_size_{}.csv'.format(args.dataset, args.lr, args.batch_size)
+    data=pd.DataFrame(columns=['acc','f1'])
+    save_path='./extractDataFile/{}_{}.csv'.format(args.model, args.dataset)
 
-    for seed in range(1234,1239):
-        result_path='./model_dir/{}_lr_{}_batch_size_{}_imagenet_8_0.0001_40_fusion_2_12_{}/eval_result.csv'.format(args.dataset, args.lr, args.batch_size,seed)
+    for k in range(1,12):
+        # result_path='./model_dir/{}_lr_{}_batch_size_{}_imagenet_8_0.0001_40_fusion_2_12_{}/eval_result.csv'.format(args.dataset, args.lr, args.batch_size,seed)
+        result_path='./model_dir/model_{}_{}_lr_1e-4_batch_size_8_num_height_384_num_width_384_1235_k_{}/eval_result.csv'.format(args.model, args.dataset, k)
         print('result_path',result_path)
-        temp=[seed, args.lr, args.batch_size]
+        temp=[]
         read=pd.read_csv(result_path)
         temp.append(float(list(read.columns)[0]))
         print(read)

@@ -18,7 +18,7 @@ basepath = os.path.dirname(os.path.dirname(sys.path[0]))
 sys.path.append(basepath)
 print('basepath',basepath)
 import dataloader
-from models import ast_models_new, only_video, video_text, ast_models_video_deit, ast_models_cls, text_video, text_audio, video_audio, test_layer_k_last, test_layer_k_select
+from models import ast_models_new, only_video, video_text, ast_models_video_deit, ast_models_cls, text_video, text_audio, video_audio, test_layer_k_last, test_layer_k_select, ast_interact_no_attention
 import numpy as np
 from traintest import train, validate
 from tabulate import tabulate
@@ -218,6 +218,15 @@ elif args.model == 'test_layer_k_select':
     text_model = test_layer_k_select.TTModel(num_classes=args.n_class)
 
     mt_model = test_layer_k_select.MTModel(label_dim=args.n_class, audio_model=audio_model, video_model=video_model, text_model=text_model, k=args.k)
+elif args.model == 'ast_interact_no_attention':
+    audio_model = ast_interact_no_attention.ASTModel(label_dim=args.n_class, fstride=args.fstride, tstride=args.tstride, input_fdim=128,
+                                  input_tdim=target_length[args.dataset], imagenet_pretrain=args.a_imagenet_pretrain,
+                                  audioset_pretrain=False, model_size='base384', patch_num=args.a_patch_num)
+    video_model = ast_interact_no_attention.VTModel_deit(label_dim=args.n_class, fstride=args.fstride, tstride=args.tstride, input_fdim=args.num_height,
+                                  input_tdim=args.num_width, imagenet_pretrain=args.v_imagenet_pretrain,
+                                  audioset_pretrain=False, model_size='base384', patch_num=args.v_patch_num)
+    text_model = ast_interact_no_attention.TTModel(num_classes=args.n_class)
+    mt_model = ast_interact_no_attention.MTModel(label_dim=args.n_class, audio_model=audio_model, video_model=video_model, text_model=text_model)
 
 if args.n_epochs > 0:
     print("\nCreating experiment directory: %s" % args.exp_dir)

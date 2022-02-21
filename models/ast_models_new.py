@@ -124,10 +124,11 @@ class ASTModel(nn.Module):
         x = self.v.norm(x)
         x = (x[:, 0] + x[:, 1]) / 2
         x_out = self.mlp_head(x)
-        pre_hidden_states = torch.stack(hidden_states) #[12, 8, 514, 768]
-        post_cls = (pre_hidden_states[:, :, 0, :] + pre_hidden_states[:, :, 1, :]) / 2 
-        hidden_states = torch.cat([post_cls.unsqueeze(2), pre_hidden_states[:, :, 2:, :]], 2)
-        assert hidden_states.size(2) == 513
+        hidden_states = torch.stack(hidden_states) #[12, 8, 514, 768]
+        # pre_hidden_states = torch.stack(hidden_states) #[12, 8, 514, 768]
+        # post_cls = (pre_hidden_states[:, :, 0, :] + pre_hidden_states[:, :, 1, :]) / 2 
+        # hidden_states = torch.cat([post_cls.unsqueeze(2), pre_hidden_states[:, :, 2:, :]], 2)
+        # assert hidden_states.size(2) == 513
         return hidden_states
 
 
@@ -225,10 +226,10 @@ class VTModel(nn.Module):
         # x = self.v.norm(x)
         # x = (x[:, 0] + x[:, 1]) / 2
         # x_out = self.mlp_head(x)
-        # hidden_states = torch.stack(hidden_states)
-        pre_hidden_states = torch.stack(hidden_states)
-        post_cls = (pre_hidden_states[:, :, 0, :] + pre_hidden_states[:, :, 1, :]) / 2 
-        hidden_states = torch.cat([post_cls.unsqueeze(2), pre_hidden_states[:, :, 2:, :]], 2)
+        hidden_states = torch.stack(hidden_states)
+        # pre_hidden_states = torch.stack(hidden_states)
+        # post_cls = (pre_hidden_states[:, :, 0, :] + pre_hidden_states[:, :, 1, :]) / 2 
+        # hidden_states = torch.cat([post_cls.unsqueeze(2), pre_hidden_states[:, :, 2:, :]], 2)
         return None, None, hidden_states
 
 

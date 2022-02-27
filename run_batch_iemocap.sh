@@ -18,7 +18,7 @@ cd /users10/zyzhang/multimodel/E2EMMT_interact
 batch_size=8
 lr=1e-4
 dataset="iemocap"
-model="ast_interact_no_attention"
+model="ast_models_cls_transformer_freeze"
 num_height=384
 num_width=384
 

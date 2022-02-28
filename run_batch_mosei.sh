@@ -18,7 +18,7 @@ cd /users10/zyzhang/multimodel/E2EMMT_interact
 batch_size=8
 lr=1e-4
 dataset="mosei"
-model="ast_models_cls_transformer_freeze"
+model="ast_models_cls_transformer_freeze_no_text"
 num_height=384
 num_width=384
 

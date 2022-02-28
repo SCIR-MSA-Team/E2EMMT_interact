@@ -94,7 +94,8 @@ class ASTModel(nn.Module):
                 new_pos_embed = nn.Parameter(torch.zeros(1, self.v.patch_embed.num_patches + 2, self.original_embedding_dim))
                 self.v.pos_embed = new_pos_embed
                 trunc_normal_(self.v.pos_embed, std=.02)
-        self.v.requires_grad = False
+        for param in self.v.parameters():
+            param.requires_grad = False
 
 
     def get_shape(self, fstride, tstride, input_fdim=128, input_tdim=1024):
@@ -200,7 +201,9 @@ class VTModel_deit(nn.Module):
                 new_pos_embed = nn.Parameter(torch.zeros(1, self.v.patch_embed.num_patches + 2, self.original_embedding_dim))
                 self.v.pos_embed = new_pos_embed
                 trunc_normal_(self.v.pos_embed, std=.02)
-        self.v.requires_grad = False
+        # self.v.requires_grad = False
+        for param in self.v.parameters():
+            param.requires_grad = False
 
     def get_shape(self, fstride, tstride, input_fdim=384, input_tdim=384):
         test_input = torch.randn(1, 3, input_fdim, input_tdim)
@@ -245,7 +248,8 @@ class TTModel(nn.Module):
         self.num_classes = num_classes
         self.mlp_head = nn.Sequential(nn.LayerNorm(768), nn.Linear(768, self.num_classes))
         # self.mlp = nn.Linear(768, self.num_classes)
-        self.bert.requires_grad = False
+        for param in self.bert.parameters():
+            param.requires_grad = False
 
     @autocast()
     def forward(self, text):

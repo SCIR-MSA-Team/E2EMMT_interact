@@ -242,9 +242,6 @@ class TTModel(nn.Module):
     def __init__(self, num_classes):
         super(TTModel, self).__init__()
         self.bert = BertModel.from_pretrained("/users10/zyzhang/graduationProject/data/pretrain_model/bert_base_uncased")
-        # self.bert.requires_grad = False
-        for param in self.bert.parameters():
-            param.requires_grad = False
         self.num_classes = num_classes
         self.mlp_head = nn.Sequential(nn.LayerNorm(768), nn.Linear(768, self.num_classes))
         # self.mlp = nn.Linear(768, self.num_classes)

@@ -1,0 +1,999 @@
+Some weights of the model checkpoint at /users10/zyzhang/graduationProject/data/pretrain_model/bert_base_uncased were not used when initializing BertModel: ['cls.seq_relationship.bias', 'cls.predictions.transform.dense.bias', 'cls.predictions.decoder.weight', 'cls.predictions.transform.LayerNorm.weight', 'cls.predictions.bias', 'cls.seq_relationship.weight', 'cls.predictions.transform.dense.weight', 'cls.predictions.transform.LayerNorm.bias']
+- This IS expected if you are initializing BertModel from the checkpoint of a model trained on another task or with another architecture (e.g. initializing a BertForSequenceClassification model from a BertForPreTraining model).
+- This IS NOT expected if you are initializing BertModel from the checkpoint of a model that you expect to be exactly identical (initializing a BertForSequenceClassification model from a BertForSequenceClassification model).
+I am process 101519, running on gpu24: starting (Tue Mar  8 11:17:50 2022)
+args.batch_size 8
+args Namespace(a_imagenet_pretrain=True, a_patch_num=256, audioset_pretrain=False, bal=None, batch_size=8, data_eval='test_iemocap_dataset.json', data_train='train_iemocap_dataset.json', data_val='valid_iemocap_dataset.json', dataset='iemocap', early_stop=5, exp_dir='model_dir/compare_loss_ast_model_video_deit_iemocap', face_size=128, freqm=0, fstride=16, k=-1, label_csv='', lr=0.0001, lr_patience=2, mixup=0, modal='tav', model='ast_model_video_deit', n_class=6, n_epochs=40, n_print_steps=100, num_height=384, num_width=384, num_workers=12, optim='adam', save_model=None, scale=0, seed=1235, text_lr_factor=100, text_max_len=300, time_dim_split=True, timem=0, tstride=16, v_imagenet_pretrain=True, v_patch_num=256)
+now process iemocap
+---------------the train dataloader---------------
+number of classes is 6
+now process iemocap
+---------------the evaluation dataloader---------------
+number of classes is 6
+---------------AST Model Summary---------------
+ImageNet pretraining: True, AudioSet pretraining: False
+frequncey stride=16, time stride=16
+number of patches=512
+---------------AST Model Summary---------------
+ImageNet pretraining: True, AudioSet pretraining: False
+frequncey stride=16, time stride=16
+number of patches=256
+Creating experiment directory: model_dir/compare_loss_ast_model_video_deit_iemocap
+Now starting training for 40 epochs
+running on cuda
+Total parameter number is : 305.026 million
+Total trainable parameter number is : 305.026 million
+scheduler for iemocap is used
+now training with iemocap, main metrics: acc, loss function: BCEWithLogitsLoss(), learning rate scheduler: <torch.optim.lr_scheduler.MultiStepLR object at 0x7f44fa49fcd0>
+current #steps=0, #epochs=1
+start training...
+---------------
+2022-03-08 11:18:30.102276
+current #epochs=1, #steps=0
+Epoch: [1][100/646]	Per Sample Total Time 0.11288	Per Sample Data Time 0.03327	Per Sample DNN Time 0.07961	Train Loss 0.4693	
+Epoch: [1][200/646]	Per Sample Total Time 0.10275	Per Sample Data Time 0.02523	Per Sample DNN Time 0.07752	Train Loss 0.4364	
+Epoch: [1][300/646]	Per Sample Total Time 0.09871	Per Sample Data Time 0.02151	Per Sample DNN Time 0.07720	Train Loss 0.4175	
+Epoch: [1][400/646]	Per Sample Total Time 0.10117	Per Sample Data Time 0.02436	Per Sample DNN Time 0.07681	Train Loss 0.4044	
+Epoch: [1][500/646]	Per Sample Total Time 0.09765	Per Sample Data Time 0.02115	Per Sample DNN Time 0.07650	Train Loss 0.3931	
+Epoch: [1][600/646]	Per Sample Total Time 0.09775	Per Sample Data Time 0.02134	Per Sample DNN Time 0.07641	Train Loss 0.3848	
+start validation
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+phase (acc)       ang     exc    fru     hap    neu     sad    average
+-------------  ------  ------  -----  ------  -----  ------  ---------
+Valid          0.8358  0.8874  0.787  0.8277  0.791  0.8969     0.8376
+phase (recall)       ang     exc     fru     hap     neu     sad    average
+----------------  ------  ------  ------  ------  ------  ------  ---------
+Valid             0.6607  0.7391  0.5833  0.4032  0.5145  0.7203     0.6035
+phase (precision)       ang     exc     fru     hap     neu     sad    average
+-------------------  ------  ------  ------  ------  ------  ------  ---------
+Valid                0.4713  0.5354  0.5615  0.2174  0.5597  0.6641     0.5016
+phase (f1)       ang    exc     fru     hap     neu     sad    average
+------------  ------  -----  ------  ------  ------  ------  ---------
+Valid         0.5502  0.621  0.5722  0.2825  0.5361  0.6911     0.5422
+phase (auc)      ang     exc     fru     hap     neu     sad    average
+-------------  -----  ------  ------  ------  ------  ------  ---------
+Valid          0.868  0.9013  0.7831  0.7637  0.7891  0.9396     0.8408
+train_loss: 0.3816
+valid_loss: 0.3218
+validation finished
+Epoch-1 lr: 1e-06
+epoch 1 training time: 629.431
+---------------
+2022-03-08 11:28:59.534017
+current #epochs=2, #steps=646
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+Epoch: [2][54/646]	Per Sample Total Time 0.10178	Per Sample Data Time 0.02430	Per Sample DNN Time 0.07748	Train Loss 0.3277	
+Epoch: [2][154/646]	Per Sample Total Time 0.08681	Per Sample Data Time 0.00946	Per Sample DNN Time 0.07735	Train Loss 0.3227	
+Epoch: [2][254/646]	Per Sample Total Time 0.08350	Per Sample Data Time 0.00630	Per Sample DNN Time 0.07720	Train Loss 0.3303	
+Epoch: [2][354/646]	Per Sample Total Time 0.08578	Per Sample Data Time 0.00632	Per Sample DNN Time 0.07946	Train Loss 0.3251	
+Epoch: [2][454/646]	Per Sample Total Time 0.08703	Per Sample Data Time 0.00566	Per Sample DNN Time 0.08137	Train Loss 0.3221	
+Epoch: [2][554/646]	Per Sample Total Time 0.08836	Per Sample Data Time 0.00589	Per Sample DNN Time 0.08247	Train Loss 0.3204	
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+start validation
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+phase (acc)      ang     exc     fru     hap     neu    sad    average
+-------------  -----  ------  ------  ------  ------  -----  ---------
+Valid          0.867  0.9145  0.7246  0.8589  0.7232  0.886      0.829
+phase (recall)       ang     exc     fru     hap     neu     sad    average
+----------------  ------  ------  ------  ------  ------  ------  ---------
+Valid             0.6518  0.6848  0.7278  0.4677  0.7052  0.7627     0.6667
+phase (precision)      ang     exc     fru    hap     neu     sad    average
+-------------------  -----  ------  ------  -----  ------  ------  ---------
+Valid                0.553  0.6495  0.4596   0.29  0.4436  0.6164      0.502
+phase (f1)       ang     exc     fru    hap     neu     sad    average
+------------  ------  ------  ------  -----  ------  ------  ---------
+Valid         0.5984  0.6667  0.5634  0.358  0.5446  0.6818     0.5688
+phase (auc)       ang     exc    fru    hap     neu     sad    average
+-------------  ------  ------  -----  -----  ------  ------  ---------
+Valid          0.8783  0.9239  0.801  0.807  0.7964  0.9367     0.8572
+train_loss: 0.3173
+valid_loss: 0.3403
+validation finished
+Epoch-2 lr: 1e-06
+epoch 2 training time: 559.891
+---------------
+2022-03-08 11:38:19.424718
+current #epochs=3, #steps=1292
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+Epoch: [3][8/646]	Per Sample Total Time 0.26222	Per Sample Data Time 0.18175	Per Sample DNN Time 0.08046	Train Loss 0.3245	
+Epoch: [3][108/646]	Per Sample Total Time 0.10599	Per Sample Data Time 0.02484	Per Sample DNN Time 0.08115	Train Loss 0.2973	
+Epoch: [3][208/646]	Per Sample Total Time 0.09913	Per Sample Data Time 0.01786	Per Sample DNN Time 0.08127	Train Loss 0.2911	
+Epoch: [3][308/646]	Per Sample Total Time 0.09289	Per Sample Data Time 0.01325	Per Sample DNN Time 0.07965	Train Loss 0.2932	
+Epoch: [3][408/646]	Per Sample Total Time 0.09445	Per Sample Data Time 0.01338	Per Sample DNN Time 0.08107	Train Loss 0.2905	
+Epoch: [3][508/646]	Per Sample Total Time 0.09339	Per Sample Data Time 0.01106	Per Sample DNN Time 0.08233	Train Loss 0.2892	
+Epoch: [3][608/646]	Per Sample Total Time 0.09370	Per Sample Data Time 0.01065	Per Sample DNN Time 0.08305	Train Loss 0.2898	
+start validation
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+phase (acc)      ang     exc     fru     hap     neu     sad    average
+-------------  -----  ------  ------  ------  ------  ------  ---------
+Valid          0.867  0.9064  0.7598  0.8887  0.7951  0.9227     0.8566
+phase (recall)       ang     exc     fru     hap     neu    sad    average
+----------------  ------  ------  ------  ------  ------  -----  ---------
+Valid             0.7679  0.7717  0.7444  0.4839  0.6127  0.822     0.7004
+phase (precision)       ang     exc     fru    hap     neu     sad    average
+-------------------  ------  ------  ------  -----  ------  ------  ---------
+Valid                0.5443  0.5966  0.5057  0.375  0.5579  0.7293     0.5515
+phase (f1)      ang    exc     fru     hap    neu     sad    average
+------------  -----  -----  ------  ------  -----  ------  ---------
+Valid         0.637  0.673  0.6022  0.4225  0.584  0.7729     0.6153
+phase (auc)       ang     exc     fru     hap    neu     sad    average
+-------------  ------  ------  ------  ------  -----  ------  ---------
+Valid          0.8895  0.9421  0.8151  0.8384  0.828  0.9647     0.8796
+train_loss: 0.2880
+valid_loss: 0.2886
+validation finished
+Epoch-3 lr: 1e-06
+epoch 3 training time: 608.471
+---------------
+2022-03-08 11:48:27.896314
+current #epochs=4, #steps=1938
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+Epoch: [4][62/646]	Per Sample Total Time 0.12501	Per Sample Data Time 0.04006	Per Sample DNN Time 0.08495	Train Loss 0.2753	
+Epoch: [4][162/646]	Per Sample Total Time 0.10261	Per Sample Data Time 0.01660	Per Sample DNN Time 0.08600	Train Loss 0.2701	
+Epoch: [4][262/646]	Per Sample Total Time 0.09379	Per Sample Data Time 0.01080	Per Sample DNN Time 0.08299	Train Loss 0.2620	
+Epoch: [4][362/646]	Per Sample Total Time 0.09269	Per Sample Data Time 0.00893	Per Sample DNN Time 0.08376	Train Loss 0.2643	
+Epoch: [4][462/646]	Per Sample Total Time 0.09370	Per Sample Data Time 0.00964	Per Sample DNN Time 0.08407	Train Loss 0.2606	
+Epoch: [4][562/646]	Per Sample Total Time 0.09350	Per Sample Data Time 0.00909	Per Sample DNN Time 0.08441	Train Loss 0.2606	
+start validation
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+phase (acc)       ang     exc    fru     hap     neu     sad    average
+-------------  ------  ------  -----  ------  ------  ------  ---------
+Valid          0.8969  0.9104  0.791  0.9267  0.8073  0.9213     0.8756
+phase (recall)       ang     exc    fru     hap     neu    sad    average
+----------------  ------  ------  -----  ------  ------  -----  ---------
+Valid             0.5179  0.7826    0.7  0.4032  0.6647  0.839     0.6512
+phase (precision)      ang     exc     fru     hap     neu     sad    average
+-------------------  -----  ------  ------  ------  ------  ------  ---------
+Valid                0.725  0.6102  0.5575  0.5952  0.5779  0.7174     0.6305
+phase (f1)       ang     exc     fru     hap     neu     sad    average
+------------  ------  ------  ------  ------  ------  ------  ---------
+Valid         0.6042  0.6857  0.6207  0.4808  0.6183  0.7734     0.6305
+phase (auc)       ang     exc     fru     hap     neu     sad    average
+-------------  ------  ------  ------  ------  ------  ------  ---------
+Valid          0.8946  0.9421  0.8391  0.8632  0.8391  0.9641     0.8904
+train_loss: 0.2598
+valid_loss: 0.2821
+validation finished
+Epoch-4 lr: 1e-06
+epoch 4 training time: 656.791
+---------------
+2022-03-08 11:59:24.687857
+current #epochs=5, #steps=2584
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+Epoch: [5][16/646]	Per Sample Total Time 0.18522	Per Sample Data Time 0.10025	Per Sample DNN Time 0.08497	Train Loss 0.2560	
+Epoch: [5][116/646]	Per Sample Total Time 0.10781	Per Sample Data Time 0.02073	Per Sample DNN Time 0.08708	Train Loss 0.2287	
+Epoch: [5][216/646]	Per Sample Total Time 0.09548	Per Sample Data Time 0.01222	Per Sample DNN Time 0.08326	Train Loss 0.2335	
+Epoch: [5][316/646]	Per Sample Total Time 0.09415	Per Sample Data Time 0.00905	Per Sample DNN Time 0.08510	Train Loss 0.2324	
+Epoch: [5][416/646]	Per Sample Total Time 0.09276	Per Sample Data Time 0.00728	Per Sample DNN Time 0.08548	Train Loss 0.2309	
+Epoch: [5][516/646]	Per Sample Total Time 0.09253	Per Sample Data Time 0.00664	Per Sample DNN Time 0.08589	Train Loss 0.2318	
+Epoch: [5][616/646]	Per Sample Total Time 0.09208	Per Sample Data Time 0.00622	Per Sample DNN Time 0.08586	Train Loss 0.2320	
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+start validation
+phase (acc)       ang     exc     fru     hap     neu     sad    average
+-------------  ------  ------  ------  ------  ------  ------  ---------
+Valid          0.8982  0.9213  0.8019  0.9199  0.7951  0.9213     0.8763
+phase (recall)       ang     exc     fru     hap     neu     sad    average
+----------------  ------  ------  ------  ------  ------  ------  ---------
+Valid             0.6518  0.7609  0.6722  0.5645  0.7168  0.7881     0.6924
+phase (precision)       ang     exc     fru     hap     neu     sad    average
+-------------------  ------  ------  ------  ------  ------  ------  ---------
+Valid                0.6697  0.6604  0.5817  0.5224  0.5487  0.7381     0.6202
+phase (f1)       ang     exc     fru     hap     neu     sad    average
+------------  ------  ------  ------  ------  ------  ------  ---------
+Valid         0.6606  0.7071  0.6237  0.5426  0.6216  0.7623      0.653
+phase (auc)       ang     exc     fru     hap     neu     sad    average
+-------------  ------  ------  ------  ------  ------  ------  ---------
+Valid          0.9048  0.9482  0.8389  0.8676  0.8438  0.9592     0.8938
+train_loss: 0.2328
+valid_loss: 0.2695
+validation finished
+Epoch-5 lr: 8.499999999999999e-07
+epoch 5 training time: 593.867
+---------------
+2022-03-08 12:09:18.555288
+current #epochs=6, #steps=3230
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+Epoch: [6][70/646]	Per Sample Total Time 0.11352	Per Sample Data Time 0.02621	Per Sample DNN Time 0.08731	Train Loss 0.1957	
+Epoch: [6][170/646]	Per Sample Total Time 0.09812	Per Sample Data Time 0.01354	Per Sample DNN Time 0.08459	Train Loss 0.1915	
+Epoch: [6][270/646]	Per Sample Total Time 0.09556	Per Sample Data Time 0.01005	Per Sample DNN Time 0.08551	Train Loss 0.1902	
+Epoch: [6][370/646]	Per Sample Total Time 0.09476	Per Sample Data Time 0.00868	Per Sample DNN Time 0.08608	Train Loss 0.1952	
+Epoch: [6][470/646]	Per Sample Total Time 0.09398	Per Sample Data Time 0.00737	Per Sample DNN Time 0.08661	Train Loss 0.1961	
+Epoch: [6][570/646]	Per Sample Total Time 0.09403	Per Sample Data Time 0.00740	Per Sample DNN Time 0.08663	Train Loss 0.1966	
+start validation
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+phase (acc)       ang     exc    fru    hap     neu    sad    average
+-------------  ------  ------  -----  -----  ------  -----  ---------
+Valid          0.8955  0.9267  0.791  0.924  0.8195  0.924     0.8801
+phase (recall)       ang     exc     fru     hap    neu     sad    average
+----------------  ------  ------  ------  ------  -----  ------  ---------
+Valid             0.6696  0.7826  0.7278  0.5806  0.711  0.8475     0.7199
+phase (precision)       ang     exc     fru     hap     neu     sad    average
+-------------------  ------  ------  ------  ------  ------  ------  ---------
+Valid                0.6522  0.6792  0.5551  0.5455  0.5971  0.7246     0.6256
+phase (f1)       ang     exc     fru     hap     neu     sad    average
+------------  ------  ------  ------  ------  ------  ------  ---------
+Valid         0.6608  0.7273  0.6298  0.5625  0.6491  0.7812     0.6684
+phase (auc)       ang     exc     fru     hap     neu     sad    average
+-------------  ------  ------  ------  ------  ------  ------  ---------
+Valid          0.9044  0.9429  0.8417  0.8804  0.8559  0.9642     0.8983
+train_loss: 0.1986
+valid_loss: 0.2646
+validation finished
+Epoch-6 lr: 7.224999999999999e-07
+epoch 6 training time: 603.253
+---------------
+2022-03-08 12:19:21.806160
+current #epochs=7, #steps=3876
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+Epoch: [7][24/646]	Per Sample Total Time 0.15080	Per Sample Data Time 0.06631	Per Sample DNN Time 0.08449	Train Loss 0.1749	
+Epoch: [7][124/646]	Per Sample Total Time 0.09571	Per Sample Data Time 0.01590	Per Sample DNN Time 0.07981	Train Loss 0.1600	
+Epoch: [7][224/646]	Per Sample Total Time 0.09400	Per Sample Data Time 0.01083	Per Sample DNN Time 0.08317	Train Loss 0.1592	
+Epoch: [7][324/646]	Per Sample Total Time 0.09437	Per Sample Data Time 0.00937	Per Sample DNN Time 0.08501	Train Loss 0.1585	
+Epoch: [7][424/646]	Per Sample Total Time 0.09350	Per Sample Data Time 0.00814	Per Sample DNN Time 0.08536	Train Loss 0.1612	
+Epoch: [7][524/646]	Per Sample Total Time 0.09471	Per Sample Data Time 0.00934	Per Sample DNN Time 0.08536	Train Loss 0.1624	
+Epoch: [7][624/646]	Per Sample Total Time 0.09438	Per Sample Data Time 0.00892	Per Sample DNN Time 0.08546	Train Loss 0.1625	
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+start validation
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+phase (acc)       ang     exc     fru     hap     neu     sad    average
+-------------  ------  ------  ------  ------  ------  ------  ---------
+Valid          0.9159  0.9186  0.8155  0.9281  0.8141  0.9389     0.8885
+phase (recall)       ang     exc     fru     hap    neu     sad    average
+----------------  ------  ------  ------  ------  -----  ------  ---------
+Valid             0.5714  0.7391  0.6889  0.5968  0.711  0.7373     0.6741
+phase (precision)       ang     exc     fru     hap     neu     sad    average
+-------------------  ------  ------  ------  ------  ------  ------  ---------
+Valid                0.8205  0.6538  0.6078  0.5692  0.5857  0.8614     0.6831
+phase (f1)       ang     exc     fru     hap     neu     sad    average
+------------  ------  ------  ------  ------  ------  ------  ---------
+Valid         0.6737  0.6939  0.6458  0.5827  0.6423  0.7945     0.6721
+phase (auc)       ang     exc     fru     hap     neu    sad    average
+-------------  ------  ------  ------  ------  ------  -----  ---------
+Valid          0.8988  0.9473  0.8494  0.8885  0.8581  0.966     0.9013
+train_loss: 0.1628
+valid_loss: 0.2719
+validation finished
+Epoch-7 lr: 6.141249999999998e-07
+epoch 7 training time: 602.258
+---------------
+2022-03-08 12:29:24.064711
+current #epochs=8, #steps=4522
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+Epoch: [8][78/646]	Per Sample Total Time 0.11678	Per Sample Data Time 0.03826	Per Sample DNN Time 0.07852	Train Loss 0.1447	
+Epoch: [8][178/646]	Per Sample Total Time 0.10184	Per Sample Data Time 0.01789	Per Sample DNN Time 0.08395	Train Loss 0.1426	
+Epoch: [8][278/646]	Per Sample Total Time 0.09837	Per Sample Data Time 0.01390	Per Sample DNN Time 0.08447	Train Loss 0.1326	
+Epoch: [8][378/646]	Per Sample Total Time 0.09498	Per Sample Data Time 0.01062	Per Sample DNN Time 0.08437	Train Loss 0.1309	
+Epoch: [8][478/646]	Per Sample Total Time 0.09272	Per Sample Data Time 0.00876	Per Sample DNN Time 0.08396	Train Loss 0.1273	
+Epoch: [8][578/646]	Per Sample Total Time 0.09108	Per Sample Data Time 0.00750	Per Sample DNN Time 0.08358	Train Loss 0.1264	
+start validation
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+phase (acc)       ang     exc     fru     hap     neu     sad    average
+-------------  ------  ------  ------  ------  ------  ------  ---------
+Valid          0.9159  0.9159  0.7883  0.9213  0.8168  0.9376     0.8826
+phase (recall)       ang     exc     fru     hap     neu    sad    average
+----------------  ------  ------  ------  ------  ------  -----  ---------
+Valid             0.6161  0.7391  0.7556  0.5968  0.6416  0.822     0.6952
+phase (precision)       ang     exc     fru     hap     neu     sad    average
+-------------------  ------  ------  ------  ------  ------  ------  ---------
+Valid                0.7841  0.6415  0.5484  0.5286  0.6033  0.7951     0.6502
+phase (f1)      ang     exc     fru     hap     neu     sad    average
+------------  -----  ------  ------  ------  ------  ------  ---------
+Valid          0.69  0.6869  0.6355  0.5606  0.6218  0.8083     0.6672
+phase (auc)       ang     exc     fru     hap     neu     sad    average
+-------------  ------  ------  ------  ------  ------  ------  ---------
+Valid          0.9012  0.9425  0.8385  0.8943  0.8646  0.9686     0.9016
+train_loss: 0.1262
+valid_loss: 0.2946
+validation finished
+Epoch-8 lr: 5.220062499999998e-07
+epoch 8 training time: 556.813
+---------------
+2022-03-08 12:38:40.879519
+current #epochs=9, #steps=5168
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+Epoch: [9][32/646]	Per Sample Total Time 0.11768	Per Sample Data Time 0.03938	Per Sample DNN Time 0.07830	Train Loss 0.1140	
+Epoch: [9][132/646]	Per Sample Total Time 0.09765	Per Sample Data Time 0.01447	Per Sample DNN Time 0.08318	Train Loss 0.0935	
+Epoch: [9][232/646]	Per Sample Total Time 0.09472	Per Sample Data Time 0.01079	Per Sample DNN Time 0.08393	Train Loss 0.0922	
+Epoch: [9][332/646]	Per Sample Total Time 0.09307	Per Sample Data Time 0.00958	Per Sample DNN Time 0.08350	Train Loss 0.0936	
+Epoch: [9][432/646]	Per Sample Total Time 0.09228	Per Sample Data Time 0.00893	Per Sample DNN Time 0.08335	Train Loss 0.0924	
+Epoch: [9][532/646]	Per Sample Total Time 0.09248	Per Sample Data Time 0.00925	Per Sample DNN Time 0.08323	Train Loss 0.0927	
+Epoch: [9][632/646]	Per Sample Total Time 0.09150	Per Sample Data Time 0.00856	Per Sample DNN Time 0.08294	Train Loss 0.0948	
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+start validation
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+phase (acc)       ang    exc     fru     hap    neu     sad    average
+-------------  ------  -----  ------  ------  -----  ------  ---------
+Valid          0.9172  0.924  0.8046  0.9227   0.81  0.9349     0.8856
+phase (recall)       ang     exc     fru    hap    neu    sad    average
+----------------  ------  ------  ------  -----  -----  -----  ---------
+Valid             0.5893  0.7174  0.6889    0.5  0.711  0.822     0.6714
+phase (precision)       ang     exc     fru     hap     neu     sad    average
+-------------------  ------  ------  ------  ------  ------  ------  ---------
+Valid                0.8148  0.6875  0.5849  0.5439  0.5775  0.7823     0.6651
+phase (f1)       ang     exc     fru    hap     neu     sad    average
+------------  ------  ------  ------  -----  ------  ------  ---------
+Valid         0.6839  0.7021  0.6327  0.521  0.6373  0.8017     0.6631
+phase (auc)       ang     exc     fru     hap    neu    sad    average
+-------------  ------  ------  ------  ------  -----  -----  ---------
+Valid          0.9031  0.9443  0.8332  0.8731  0.864  0.967     0.8974
+train_loss: 0.0948
+valid_loss: 0.3095
+validation finished
+Epoch-9 lr: 4.437053124999999e-07
+epoch 9 training time: 555.834
+---------------
+2022-03-08 12:47:56.710496
+current #epochs=10, #steps=5814
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+Epoch: [10][86/646]	Per Sample Total Time 0.11000	Per Sample Data Time 0.02227	Per Sample DNN Time 0.08773	Train Loss 0.0670	
+Epoch: [10][186/646]	Per Sample Total Time 0.09891	Per Sample Data Time 0.01135	Per Sample DNN Time 0.08757	Train Loss 0.0680	
+Epoch: [10][286/646]	Per Sample Total Time 0.09768	Per Sample Data Time 0.01085	Per Sample DNN Time 0.08683	Train Loss 0.0666	
+Epoch: [10][386/646]	Per Sample Total Time 0.09507	Per Sample Data Time 0.00848	Per Sample DNN Time 0.08660	Train Loss 0.0653	
+Epoch: [10][486/646]	Per Sample Total Time 0.09614	Per Sample Data Time 0.00941	Per Sample DNN Time 0.08673	Train Loss 0.0647	
+Epoch: [10][586/646]	Per Sample Total Time 0.09488	Per Sample Data Time 0.00809	Per Sample DNN Time 0.08679	Train Loss 0.0643	
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+start validation
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+phase (acc)       ang     exc     fru     hap     neu    sad    average
+-------------  ------  ------  ------  ------  ------  -----  ---------
+Valid          0.9132  0.9213  0.7775  0.9308  0.7978  0.943     0.8806
+phase (recall)       ang     exc     fru     hap     neu     sad    average
+----------------  ------  ------  ------  ------  ------  ------  ---------
+Valid             0.6071  0.7283  0.7556  0.4839  0.7977  0.7881     0.6934
+phase (precision)       ang    exc     fru     hap     neu     sad    average
+-------------------  ------  -----  ------  ------  ------  ------  ---------
+Valid                0.7727   0.67  0.5312  0.6122  0.5476  0.8455     0.6632
+phase (f1)      ang     exc     fru     hap     neu     sad    average
+------------  -----  ------  ------  ------  ------  ------  ---------
+Valid          0.68  0.6979  0.6239  0.5405  0.6494  0.8158     0.6679
+phase (auc)       ang     exc     fru    hap     neu    sad    average
+-------------  ------  ------  ------  -----  ------  -----  ---------
+Valid          0.8881  0.9407  0.8363  0.889  0.8685  0.966     0.8981
+train_loss: 0.0649
+valid_loss: 0.3430
+validation finished
+Epoch-10 lr: 3.771495156249999e-07
+epoch 10 training time: 578.417
+---------------
+2022-03-08 12:57:35.128285
+current #epochs=11, #steps=6460
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+Epoch: [11][40/646]	Per Sample Total Time 0.14379	Per Sample Data Time 0.05304	Per Sample DNN Time 0.09075	Train Loss 0.0489	
+Epoch: [11][140/646]	Per Sample Total Time 0.10637	Per Sample Data Time 0.01984	Per Sample DNN Time 0.08653	Train Loss 0.0430	
+Epoch: [11][240/646]	Per Sample Total Time 0.10069	Per Sample Data Time 0.01436	Per Sample DNN Time 0.08633	Train Loss 0.0431	
+Epoch: [11][340/646]	Per Sample Total Time 0.09882	Per Sample Data Time 0.01270	Per Sample DNN Time 0.08611	Train Loss 0.0418	
+Epoch: [11][440/646]	Per Sample Total Time 0.09645	Per Sample Data Time 0.01017	Per Sample DNN Time 0.08627	Train Loss 0.0423	
+Epoch: [11][540/646]	Per Sample Total Time 0.09605	Per Sample Data Time 0.01005	Per Sample DNN Time 0.08600	Train Loss 0.0435	
+Epoch: [11][640/646]	Per Sample Total Time 0.09628	Per Sample Data Time 0.01073	Per Sample DNN Time 0.08555	Train Loss 0.0427	
+start validation
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+phase (acc)       ang     exc     fru     hap     neu    sad    average
+-------------  ------  ------  ------  ------  ------  -----  ---------
+Valid          0.8928  0.9091  0.8168  0.9132  0.8412  0.943      0.886
+phase (recall)       ang     exc     fru     hap     neu     sad    average
+----------------  ------  ------  ------  ------  ------  ------  ---------
+Valid             0.6696  0.8152  0.7056  0.5161  0.6185  0.8051     0.6884
+phase (precision)      ang    exc     fru     hap     neu     sad    average
+-------------------  -----  -----  ------  ------  ------  ------  ---------
+Valid                0.641    0.6  0.6077  0.4848  0.6772  0.8333     0.6407
+phase (f1)      ang     exc    fru    hap     neu    sad    average
+------------  -----  ------  -----  -----  ------  -----  ---------
+Valid         0.655  0.6912  0.653    0.5  0.6465  0.819     0.6608
+phase (auc)       ang     exc     fru     hap    neu     sad    average
+-------------  ------  ------  ------  ------  -----  ------  ---------
+Valid          0.8843  0.9339  0.8404  0.8683  0.865  0.9641     0.8927
+train_loss: 0.0428
+valid_loss: 0.3752
+validation finished
+Epoch-11 lr: 3.205770882812499e-07
+epoch 11 training time: 583.095
+---------------
+2022-03-08 13:07:18.223406
+current #epochs=12, #steps=7106
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+Epoch: [12][94/646]	Per Sample Total Time 0.11206	Per Sample Data Time 0.02803	Per Sample DNN Time 0.08403	Train Loss 0.0258	
+Epoch: [12][194/646]	Per Sample Total Time 0.10004	Per Sample Data Time 0.01520	Per Sample DNN Time 0.08484	Train Loss 0.0279	
+Epoch: [12][294/646]	Per Sample Total Time 0.09918	Per Sample Data Time 0.01393	Per Sample DNN Time 0.08525	Train Loss 0.0266	
+Epoch: [12][394/646]	Per Sample Total Time 0.09769	Per Sample Data Time 0.01229	Per Sample DNN Time 0.08540	Train Loss 0.0255	
+Epoch: [12][494/646]	Per Sample Total Time 0.09709	Per Sample Data Time 0.01153	Per Sample DNN Time 0.08557	Train Loss 0.0265	
+Epoch: [12][594/646]	Per Sample Total Time 0.09582	Per Sample Data Time 0.01017	Per Sample DNN Time 0.08565	Train Loss 0.0271	
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+start validation
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+phase (acc)       ang    exc     fru     hap     neu     sad    average
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+-------------  ------  -----  ------  ------  ------  ------  ---------
+Valid          0.9118  0.924  0.8155  0.9294  0.8223  0.9417     0.8908
+phase (recall)       ang     exc    fru     hap     neu     sad    average
+----------------  ------  ------  -----  ------  ------  ------  ---------
+Valid             0.5446  0.8152   0.65  0.4355  0.7283  0.7966     0.6617
+phase (precision)       ang     exc     fru     hap    neu     sad    average
+-------------------  ------  ------  ------  ------  -----  ------  ---------
+Valid                0.8133  0.6579  0.6158  0.6136    0.6  0.8319     0.6888
+phase (f1)       ang     exc     fru     hap    neu     sad    average
+------------  ------  ------  ------  ------  -----  ------  ---------
+Valid         0.6524  0.7282  0.6324  0.5094  0.658  0.8139     0.6657
+phase (auc)       ang     exc     fru     hap     neu     sad    average
+-------------  ------  ------  ------  ------  ------  ------  ---------
+Valid          0.8755  0.9439  0.8402  0.8637  0.8708  0.9626     0.8928
+train_loss: 0.0271
+valid_loss: 0.4030
+validation finished
+Epoch-12 lr: 2.724905250390624e-07
+epoch 12 training time: 602.985
+---------------
+2022-03-08 13:17:21.208756
+current #epochs=13, #steps=7752
+Epoch: [13][48/646]	Per Sample Total Time 0.13088	Per Sample Data Time 0.04285	Per Sample DNN Time 0.08803	Train Loss 0.0271	
+Epoch: [13][148/646]	Per Sample Total Time 0.10749	Per Sample Data Time 0.01934	Per Sample DNN Time 0.08815	Train Loss 0.0213	
+Epoch: [13][248/646]	Per Sample Total Time 0.10302	Per Sample Data Time 0.01474	Per Sample DNN Time 0.08827	Train Loss 0.0207	
+Epoch: [13][348/646]	Per Sample Total Time 0.10069	Per Sample Data Time 0.01286	Per Sample DNN Time 0.08782	Train Loss 0.0193	
+Epoch: [13][448/646]	Per Sample Total Time 0.09792	Per Sample Data Time 0.01039	Per Sample DNN Time 0.08752	Train Loss 0.0196	
+Epoch: [13][548/646]	Per Sample Total Time 0.09707	Per Sample Data Time 0.01005	Per Sample DNN Time 0.08702	Train Loss 0.0194	
+start validation
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+phase (acc)       ang    exc     fru    hap     neu     sad    average
+-------------  ------  -----  ------  -----  ------  ------  ---------
+Valid          0.8942  0.924  0.8033  0.924  0.8209  0.9471     0.8856
+phase (recall)       ang     exc     fru     hap     neu     sad    average
+----------------  ------  ------  ------  ------  ------  ------  ---------
+Valid             0.6429  0.7391  0.7167  0.4839  0.7341  0.7712     0.6813
+phase (precision)       ang    exc     fru     hap     neu     sad    average
+-------------------  ------  -----  ------  ------  ------  ------  ---------
+Valid                0.6545   0.68  0.5785  0.5556  0.5962  0.8835     0.6581
+phase (f1)       ang     exc     fru     hap    neu     sad    average
+------------  ------  ------  ------  ------  -----  ------  ---------
+Valid         0.6486  0.7083  0.6402  0.5172  0.658  0.8235      0.666
+phase (auc)       ang     exc     fru     hap     neu     sad    average
+-------------  ------  ------  ------  ------  ------  ------  ---------
+Valid          0.8813  0.9385  0.8454  0.8696  0.8652  0.9605     0.8934
+train_loss: 0.0190
+valid_loss: 0.4309
+validation finished
+Epoch-13 lr: 2.3161694628320302e-07
+epoch 13 training time: 584.464
+---------------
+2022-03-08 13:27:05.673887
+current #epochs=14, #steps=8398
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+Epoch: [14][2/646]	Per Sample Total Time 0.59377	Per Sample Data Time 0.49934	Per Sample DNN Time 0.09443	Train Loss 0.0140	
+Epoch: [14][102/646]	Per Sample Total Time 0.11049	Per Sample Data Time 0.02127	Per Sample DNN Time 0.08922	Train Loss 0.0131	
+Epoch: [14][202/646]	Per Sample Total Time 0.09979	Per Sample Data Time 0.01250	Per Sample DNN Time 0.08729	Train Loss 0.0134	
+Epoch: [14][302/646]	Per Sample Total Time 0.10007	Per Sample Data Time 0.01335	Per Sample DNN Time 0.08672	Train Loss 0.0130	
+Epoch: [14][402/646]	Per Sample Total Time 0.09724	Per Sample Data Time 0.01072	Per Sample DNN Time 0.08652	Train Loss 0.0122	
+Epoch: [14][502/646]	Per Sample Total Time 0.09517	Per Sample Data Time 0.00895	Per Sample DNN Time 0.08622	Train Loss 0.0116	
+Epoch: [14][602/646]	Per Sample Total Time 0.09561	Per Sample Data Time 0.00978	Per Sample DNN Time 0.08583	Train Loss 0.0118	
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+start validation
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+phase (acc)      ang    exc     fru     hap    neu     sad    average
+-------------  -----  -----  ------  ------  -----  ------  ---------
+Valid          0.882  0.924  0.8195  0.9186   0.81  0.9403     0.8824
+phase (recall)       ang     exc     fru     hap     neu     sad    average
+----------------  ------  ------  ------  ------  ------  ------  ---------
+Valid             0.6607  0.7391  0.6833  0.5323  0.7283  0.7881     0.6886
+phase (precision)       ang    exc     fru     hap     neu     sad    average
+-------------------  ------  -----  ------  ------  ------  ------  ---------
+Valid                0.6016   0.68  0.6181  0.5156  0.5753  0.8304     0.6368
+phase (f1)       ang     exc     fru     hap     neu     sad    average
+------------  ------  ------  ------  ------  ------  ------  ---------
+Valid         0.6298  0.7083  0.6491  0.5238  0.6429  0.8087     0.6604
+phase (auc)       ang     exc     fru     hap    neu     sad    average
+-------------  ------  ------  ------  ------  -----  ------  ---------
+Valid          0.8672  0.9339  0.8414  0.8741  0.866  0.9582     0.8901
+train_loss: 0.0117
+valid_loss: 0.4612
+validation finished
+Epoch-14 lr: 1.9687440434072255e-07
+epoch 14 training time: 578.118
+---------------
+2022-03-08 13:36:43.790004
+current #epochs=15, #steps=9044
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+Epoch: [15][56/646]	Per Sample Total Time 0.12291	Per Sample Data Time 0.03708	Per Sample DNN Time 0.08583	Train Loss 0.0084	
+Epoch: [15][156/646]	Per Sample Total Time 0.10419	Per Sample Data Time 0.01868	Per Sample DNN Time 0.08551	Train Loss 0.0068	
+Epoch: [15][256/646]	Per Sample Total Time 0.09424	Per Sample Data Time 0.01209	Per Sample DNN Time 0.08215	Train Loss 0.0076	
+Epoch: [15][356/646]	Per Sample Total Time 0.09139	Per Sample Data Time 0.00917	Per Sample DNN Time 0.08221	Train Loss 0.0070	
+Epoch: [15][456/646]	Per Sample Total Time 0.09146	Per Sample Data Time 0.00753	Per Sample DNN Time 0.08393	Train Loss 0.0070	
+Epoch: [15][556/646]	Per Sample Total Time 0.09143	Per Sample Data Time 0.00661	Per Sample DNN Time 0.08481	Train Loss 0.0082	
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+start validation
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+phase (acc)      ang     exc    fru     hap     neu     sad    average
+-------------  -----  ------  -----  ------  ------  ------  ---------
+Valid          0.905  0.9104  0.787  0.9172  0.8019  0.9376     0.8765
+phase (recall)       ang     exc     fru     hap     neu     sad    average
+----------------  ------  ------  ------  ------  ------  ------  ---------
+Valid             0.5982  0.7391  0.6889  0.5161  0.8324  0.7458     0.6867
+phase (precision)       ang     exc     fru     hap     neu     sad    average
+-------------------  ------  ------  ------  ------  ------  ------  ---------
+Valid                0.7283  0.6182  0.5511  0.5079  0.5517  0.8462     0.6339
+phase (f1)       ang     exc     fru    hap     neu     sad    average
+------------  ------  ------  ------  -----  ------  ------  ---------
+Valid         0.6569  0.6733  0.6123  0.512  0.6636  0.7928     0.6518
+phase (auc)       ang     exc     fru     hap     neu     sad    average
+-------------  ------  ------  ------  ------  ------  ------  ---------
+Valid          0.8868  0.9366  0.8307  0.8598  0.8667  0.9567     0.8895
+train_loss: 0.0091
+valid_loss: 0.4721
+validation finished
+Epoch-15 lr: 1.6734324368961418e-07
+epoch 15 training time: 563.702
+---------------
+2022-03-08 13:46:07.491956
+current #epochs=16, #steps=9690
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+Epoch: [16][10/646]	Per Sample Total Time 0.24135	Per Sample Data Time 0.15120	Per Sample DNN Time 0.09014	Train Loss 0.0099	
+Epoch: [16][110/646]	Per Sample Total Time 0.11052	Per Sample Data Time 0.02256	Per Sample DNN Time 0.08796	Train Loss 0.0078	
+Epoch: [16][210/646]	Per Sample Total Time 0.09931	Per Sample Data Time 0.01286	Per Sample DNN Time 0.08645	Train Loss 0.0065	
+Epoch: [16][310/646]	Per Sample Total Time 0.09656	Per Sample Data Time 0.01134	Per Sample DNN Time 0.08522	Train Loss 0.0056	
+Epoch: [16][410/646]	Per Sample Total Time 0.09465	Per Sample Data Time 0.00994	Per Sample DNN Time 0.08471	Train Loss 0.0055	
+Epoch: [16][510/646]	Per Sample Total Time 0.09439	Per Sample Data Time 0.00932	Per Sample DNN Time 0.08507	Train Loss 0.0058	
+Epoch: [16][610/646]	Per Sample Total Time 0.09588	Per Sample Data Time 0.01057	Per Sample DNN Time 0.08531	Train Loss 0.0058	
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+start validation
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+phase (acc)       ang     exc    fru     hap     neu     sad    average
+-------------  ------  ------  -----  ------  ------  ------  ---------
+Valid          0.9023  0.9132  0.825  0.9213  0.8385  0.9349     0.8892
+phase (recall)       ang     exc     fru     hap     neu     sad    average
+----------------  ------  ------  ------  ------  ------  ------  ---------
+Valid             0.5982  0.7174  0.6444  0.4355  0.7919  0.8136     0.6668
+phase (precision)       ang     exc     fru    hap     neu     sad    average
+-------------------  ------  ------  ------  -----  ------  ------  ---------
+Valid                0.7128  0.6346  0.6409   0.54  0.6227  0.7869     0.6563
+phase (f1)       ang     exc     fru     hap     neu    sad    average
+------------  ------  ------  ------  ------  ------  -----  ---------
+Valid         0.6505  0.6735  0.6427  0.4821  0.6972    0.8     0.6577
+phase (auc)       ang    exc     fru     hap     neu     sad    average
+-------------  ------  -----  ------  ------  ------  ------  ---------
+Valid          0.8712  0.934  0.8435  0.8622  0.8728  0.9596     0.8906
+train_loss: 0.0057
+valid_loss: 0.4831
+validation finished
+Epoch-16 lr: 1.4224175713617204e-07
+epoch 16 training time: 587.422
+---------------
+2022-03-08 13:55:54.917038
+current #epochs=17, #steps=10336
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+Epoch: [17][64/646]	Per Sample Total Time 0.11697	Per Sample Data Time 0.02891	Per Sample DNN Time 0.08806	Train Loss 0.0050	
+Epoch: [17][164/646]	Per Sample Total Time 0.10126	Per Sample Data Time 0.01443	Per Sample DNN Time 0.08683	Train Loss 0.0042	
+Epoch: [17][264/646]	Per Sample Total Time 0.09959	Per Sample Data Time 0.01498	Per Sample DNN Time 0.08461	Train Loss 0.0036	
+Epoch: [17][364/646]	Per Sample Total Time 0.09623	Per Sample Data Time 0.01381	Per Sample DNN Time 0.08242	Train Loss 0.0038	
+Epoch: [17][464/646]	Per Sample Total Time 0.09642	Per Sample Data Time 0.01299	Per Sample DNN Time 0.08343	Train Loss 0.0037	
+Epoch: [17][564/646]	Per Sample Total Time 0.09561	Per Sample Data Time 0.01184	Per Sample DNN Time 0.08376	Train Loss 0.0040	
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+start validation
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+phase (acc)       ang     exc     fru     hap     neu     sad    average
+-------------  ------  ------  ------  ------  ------  ------  ---------
+Valid          0.8901  0.9132  0.8128  0.9199  0.8195  0.9403     0.8826
+phase (recall)       ang     exc     fru     hap     neu     sad    average
+----------------  ------  ------  ------  ------  ------  ------  ---------
+Valid             0.6518  0.8043  0.6222  0.4516  0.7283  0.7966     0.6758
+phase (precision)       ang     exc     fru     hap     neu     sad    average
+-------------------  ------  ------  ------  ------  ------  ------  ---------
+Valid                0.6348  0.6167  0.6154  0.5283  0.5943  0.8246     0.6357
+phase (f1)       ang     exc     fru    hap     neu     sad    average
+------------  ------  ------  ------  -----  ------  ------  ---------
+Valid         0.6432  0.6981  0.6188  0.487  0.6545  0.8103      0.652
+phase (auc)       ang     exc     fru     hap     neu     sad    average
+-------------  ------  ------  ------  ------  ------  ------  ---------
+Valid          0.8734  0.9353  0.8356  0.8408  0.8651  0.9593     0.8849
+train_loss: 0.0039
+valid_loss: 0.5202
+validation finished
+Early Stop !!!
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+phase (acc)       ang    exc     fru     hap     neu     sad    average
+-------------  ------  -----  ------  ------  ------  ------  ---------
+Valid          0.9118  0.924  0.8168  0.9294  0.8209  0.9417     0.8908
+phase (recall)       ang     exc     fru     hap     neu     sad    average
+----------------  ------  ------  ------  ------  ------  ------  ---------
+Valid             0.5446  0.8152  0.6556  0.4355  0.7283  0.7966     0.6626
+phase (precision)       ang     exc     fru     hap     neu     sad    average
+-------------------  ------  ------  ------  ------  ------  ------  ---------
+Valid                0.8133  0.6579  0.6178  0.6136  0.5972  0.8319     0.6886
+phase (f1)       ang     exc     fru     hap     neu     sad    average
+------------  ------  ------  ------  ------  ------  ------  ---------
+Valid         0.6524  0.7282  0.6361  0.5094  0.6562  0.8139      0.666
+phase (auc)       ang     exc     fru     hap     neu     sad    average
+-------------  ------  ------  ------  ------  ------  ------  ---------
+Valid          0.8754  0.9439  0.8403  0.8638  0.8707  0.9626     0.8928
+now process iemocap
+---------------the evaluation dataloader---------------
+number of classes is 6
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+[W pthreadpool-cpp.cc:90] Warning: Leaking Caffe2 thread-pool after fork. (function pthreadpool)
+---------------evaluate on the test set---------------
+phase (acc)      ang    exc     fru     hap    neu    sad    average
+-------------  -----  -----  ------  ------  -----  -----  ---------
+Test           0.898  0.892  0.7907  0.9169  0.817  0.921     0.8726
+phase (recall)       ang     exc     fru     hap     neu    sad    average
+----------------  ------  ------  ------  ------  ------  -----  ---------
+Test              0.5171  0.6948  0.5957  0.3185  0.7072  0.686     0.5865
+phase (precision)      ang     exc     fru     hap     neu    sad    average
+-------------------  -----  ------  ------  ------  ------  -----  ---------
+Test                 0.761  0.6091  0.5801  0.5811  0.5619  0.732     0.6375
+phase (f1)       ang     exc     fru     hap     neu     sad    average
+------------  ------  ------  ------  ------  ------  ------  ---------
+Test          0.6158  0.6491  0.5878  0.4115  0.6262  0.7082     0.5998
+phase (auc)      ang     exc     fru     hap     neu     sad    average
+-------------  -----  ------  ------  ------  ------  ------  ---------
+Test           0.899  0.9225  0.8157  0.8367  0.8622  0.9478     0.8806

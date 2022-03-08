@@ -18,7 +18,7 @@ basepath = os.path.dirname(os.path.dirname(sys.path[0]))
 sys.path.append(basepath)
 print('basepath',basepath)
 import dataloader
-from models import ast_models_new, only_video, video_text, ast_models_video_deit, ast_models_cls, text_video, text_audio, video_audio, test_layer_k_last, test_layer_k_select, ast_interact_no_attention, ast_models_video_deit_transformer_freeze, ast_models_cls_transformer_freeze, ast_models_video_deit_transformer_freeze_no_text, ast_models_cls_transformer_freeze_no_text
+from models import ast_models_new, only_video, video_text, ast_models_video_deit, ast_models_cls, text_video, text_audio, video_audio, test_layer_k_last, test_layer_k_select, ast_interact_no_attention, ast_models_video_deit_transformer_freeze, ast_models_cls_transformer_freeze, ast_models_video_deit_transformer_freeze_no_text, ast_models_cls_transformer_freeze_no_text, ast_models_audio_interact, ast_models_text_interact, ast_models_video_interact
 import numpy as np
 from traintest import train, validate
 from tabulate import tabulate
@@ -29,6 +29,8 @@ from transformers import BertTokenizer
 import warnings
 warnings.filterwarnings("ignore", category=Warning)
 
+import wandb
+wandb.init(project='ast_model_video_deit_iemocap')
 
 print("I am process %s, running on %s: starting (%s)" % (os.getpid(), os.uname()[1], time.asctime()))
 
@@ -263,7 +265,33 @@ elif args.model == 'ast_models_cls_transformer_freeze_no_text':
                                   audioset_pretrain=False, model_size='base384', patch_num=args.v_patch_num)
     text_model = ast_models_cls_transformer_freeze_no_text.TTModel(num_classes=args.n_class)
     mt_model = ast_models_cls_transformer_freeze_no_text.MTModel(label_dim=args.n_class, audio_model=audio_model, video_model=video_model, text_model=text_model)
-
+elif args.model == 'ast_models_audio_interact':
+    audio_model = ast_models_audio_interact.ASTModel(label_dim=args.n_class, fstride=args.fstride, tstride=args.tstride, input_fdim=128,
+                                  input_tdim=target_length[args.dataset], imagenet_pretrain=args.a_imagenet_pretrain,
+                                  audioset_pretrain=False, model_size='base384', patch_num=args.a_patch_num)
+    video_model = ast_models_audio_interact.VTModel_deit(label_dim=args.n_class, fstride=args.fstride, tstride=args.tstride, input_fdim=args.num_height,
+                                  input_tdim=args.num_width, imagenet_pretrain=args.v_imagenet_pretrain,
+                                  audioset_pretrain=False, model_size='base384', patch_num=args.v_patch_num)
+    text_model = ast_models_audio_interact.TTModel(num_classes=args.n_class)
+    mt_model = ast_models_audio_interact.MTModel(label_dim=args.n_class, audio_model=audio_model, video_model=video_model, text_model=text_model)
+elif args.model == 'ast_models_text_interact':
+    audio_model = ast_models_text_interact.ASTModel(label_dim=args.n_class, fstride=args.fstride, tstride=args.tstride, input_fdim=128,
+                                  input_tdim=target_length[args.dataset], imagenet_pretrain=args.a_imagenet_pretrain,
+                                  audioset_pretrain=False, model_size='base384', patch_num=args.a_patch_num)
+    video_model = ast_models_text_interact.VTModel_deit(label_dim=args.n_class, fstride=args.fstride, tstride=args.tstride, input_fdim=args.num_height,
+                                  input_tdim=args.num_width, imagenet_pretrain=args.v_imagenet_pretrain,
+                                  audioset_pretrain=False, model_size='base384', patch_num=args.v_patch_num)
+    text_model = ast_models_text_interact.TTModel(num_classes=args.n_class)
+    mt_model = ast_models_text_interact.MTModel(label_dim=args.n_class, audio_model=audio_model, video_model=video_model, text_model=text_model)
+elif args.model == 'ast_models_video_interact':
+    audio_model = ast_models_video_interact.ASTModel(label_dim=args.n_class, fstride=args.fstride, tstride=args.tstride, input_fdim=128,
+                                  input_tdim=target_length[args.dataset], imagenet_pretrain=args.a_imagenet_pretrain,
+                                  audioset_pretrain=False, model_size='base384', patch_num=args.a_patch_num)
+    video_model = ast_models_video_interact.VTModel_deit(label_dim=args.n_class, fstride=args.fstride, tstride=args.tstride, input_fdim=args.num_height,
+                                  input_tdim=args.num_width, imagenet_pretrain=args.v_imagenet_pretrain,
+                                  audioset_pretrain=False, model_size='base384', patch_num=args.v_patch_num)
+    text_model = ast_models_video_interact.TTModel(num_classes=args.n_class)
+    mt_model = ast_models_video_interact.MTModel(label_dim=args.n_class, audio_model=audio_model, video_model=video_model, text_model=text_model)
 
 if args.n_epochs > 0:
     print("\nCreating experiment directory: %s" % args.exp_dir)

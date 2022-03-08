@@ -3,3 +3,4 @@ pkl_files
 *.txt
 __pycache__
 model_dir
+wandb

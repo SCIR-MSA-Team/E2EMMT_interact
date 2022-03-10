@@ -7,7 +7,7 @@
 
 import sys
 import os
-import wandb
+# import wandb
 import datetime
 sys.path.append(os.path.dirname(os.path.dirname(sys.path[0])))
 from utilities import *
@@ -102,7 +102,7 @@ def train(mmt_model, train_loader, test_loader, args, tokenizer_model):
         print('---------------')
         print(datetime.datetime.now())
         print("current #epochs=%s, #steps=%s" % (epoch, global_step))
-        loss_show = 0
+        # loss_show = 0
         for i, (audio_input, video_input, text_input, labels) in enumerate(train_loader):
 
             B = audio_input.size(0)
@@ -134,12 +134,12 @@ def train(mmt_model, train_loader, test_loader, args, tokenizer_model):
                     loss = loss_fn(tav_output, torch.argmax(labels.long(), axis=1))
                 else:
                     loss = loss_fn(tav_output, labels)
-                if i%100 == 0 and i!=0:
-                    # wandb.log({"temp":loss_show})
-                    wandb.log({"iemocap_loss":loss_show})
-                    loss_show = 0
-                else:
-                    loss_show+=loss
+                # if i%100 == 0 and i!=0:
+                #     # wandb.log({"temp":loss_show})
+                #     wandb.log({"iemocap_loss":loss_show})
+                #     loss_show = 0
+                # else:
+                #     loss_show+=loss
                 # reg_loss_fn = nn.L1Loss()
                 # eye_tensor = torch.eye(256).to(device)
 

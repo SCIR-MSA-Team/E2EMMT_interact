@@ -29,8 +29,8 @@ from transformers import BertTokenizer
 import warnings
 warnings.filterwarnings("ignore", category=Warning)
 
-import wandb
-wandb.init(project='ast_model_video_deit_iemocap')
+# import wandb
+# wandb.init(project='ast_model_video_deit_iemocap')
 
 print("I am process %s, running on %s: starting (%s)" % (os.getpid(), os.uname()[1], time.asctime()))
 

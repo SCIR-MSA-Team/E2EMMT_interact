@@ -18,7 +18,7 @@ cd /users10/zyzhang/multimodel/E2EMMT_interact
 batch_size=8
 lr=1e-4
 dataset="mosei"
-model="ast_models_text_interact"
+model="ast_models_video_interact"
 num_height=384
 num_width=384
 

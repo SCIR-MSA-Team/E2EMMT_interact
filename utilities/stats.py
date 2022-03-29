@@ -59,10 +59,10 @@ def eval_mosei_senti(results, truths, exclude_zero=False):
 
     return mae, acc2, acc5, acc7, f1, corr
 
-def calculate_stats(preds, truths, best_thresholds, use_wacc):
-    return eval_iemocap(preds, truths, best_thresholds, use_wacc)
+def calculate_stats(preds, truths, best_thresholds, use_wacc,ids=None, valid_test=None, args=None):
+    return eval_iemocap(preds, truths, best_thresholds, use_wacc, ids=ids, valid_test=valid_test, args=args)
 
-def eval_iemocap(preds, truths, best_thresholds, use_wacc):
+def eval_iemocap(preds, truths, best_thresholds, use_wacc, ids=None, valid_test=None, args=None):
     # emos = ["Happy", "Sad", "Angry", "Neutral"]
     '''
     preds: (bs, num_emotions)
@@ -111,6 +111,7 @@ def eval_iemocap(preds, truths, best_thresholds, use_wacc):
         pred_i = preds[:, i]
         truth_i = truths[:, i]
 
+
         if use_wacc:
             acc = weighted_acc(pred_i, truth_i, verbose=False)
         else:
@@ -128,6 +129,27 @@ def eval_iemocap(preds, truths, best_thresholds, use_wacc):
     recalls.append(np.average(recalls))
     precisions.append(np.average(precisions))
     f1s.append(np.average(f1s))
+
+    if args.dataset == 'mosei':
+        sentiments = ['anger', 'disgust', 'fear', 'happy', 'sad', 'surprise']
+    elif args.dataset == 'iemocap':
+        sentiments = ['anger', 'excited', 'frustrated', 'happy', 'neutral', 'sad']
+
+    if valid_test == 'eval_set':
+        with open('./analysis_result/{}_{}.txt'.format(args.model,args.dataset),'w') as f:
+            for i in range(len(preds)):
+                pred_i = preds[i, :]
+                truth_i = truths[i, :]
+
+                pred_sent = []
+                for index in range(len(pred_i)):
+                    if pred_i[index] == 1:
+                        pred_sent.append(sentiments[index])
+                truth_sent = []
+                for index in range(len(truth_i)):
+                    if truth_i[index] == 1:
+                        truth_sent.append(sentiments[index])
+                f.write('{}\t{}\t{}\n'.format(ids[i],','.join(pred_sent),','.join(truth_sent)))
 
     return (accs, recalls, precisions, f1s, aucs, best_thresholds)
 

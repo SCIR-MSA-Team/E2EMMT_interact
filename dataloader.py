@@ -204,8 +204,8 @@ class MultimodalDataset(Dataset):
         audio is a FloatTensor of size (N_freq, N_frames) for spectrogram, or (N_frames) for waveform
         nframes is an integer
         """
-        
         datum = self.data[index]
+        ids = datum['id']
         fbank = self._wav2fbank(datum['wav'])
         text = datum['text']
         fbank = (fbank - self.norm_mean) / (self.norm_std * 2)
@@ -231,7 +231,7 @@ class MultimodalDataset(Dataset):
         # the output audio shape is [time_frame_num, frequency_bins]
         # the output images shape is [3, self.limited_H, self.limited_W]
         
-        return fbank, images, text, label_indices
+        return fbank, images, text, label_indices, ids
 
     def __len__(self):
         return len(self.data)
@@ -241,12 +241,14 @@ def collate_fn(batch):
     imgs = []
     labels = []
     texts = []
+    ids = []
     for dp in batch:
-        fbank, sampledImgs, text, label = dp
+        fbank, sampledImgs, text, label, curr_id = dp
         if sampledImgs is None:
             continue
         fbanks.append(fbank)
         imgs.append(sampledImgs)
         labels.append(label)
         texts.append(text)
-    return torch.stack(fbanks), torch.stack(imgs), texts, torch.stack(labels)
+        ids.append(curr_id)
+    return torch.stack(fbanks), torch.stack(imgs), texts, torch.stack(labels), ids

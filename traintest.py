@@ -103,7 +103,7 @@ def train(mmt_model, train_loader, test_loader, args, tokenizer_model):
         print(datetime.datetime.now())
         print("current #epochs=%s, #steps=%s" % (epoch, global_step))
         # loss_show = 0
-        for i, (audio_input, video_input, text_input, labels) in enumerate(train_loader):
+        for i, (audio_input, video_input, text_input, labels, ids) in enumerate(train_loader):
 
             B = audio_input.size(0)
             audio_input = audio_input.to(device, non_blocking=True)
@@ -277,8 +277,10 @@ def validate(mmt_model, val_loader, args, epoch, tokenizer_model, thresholds=Non
     A_predictions = []
     A_targets = []
     A_loss = []
+    ids = []
     with torch.no_grad():
-        for i, (audio_input, video_input, text_input, labels) in enumerate(val_loader):
+        for i, (audio_input, video_input, text_input, labels, curr_id) in enumerate(val_loader):
+            ids.extend(curr_id)
             audio_input = audio_input.to(device)
             video_input = video_input.to(device, non_blocking=True)
             text_input = tokenizer_model(text_input, return_tensors='pt', max_length=args.text_max_len, padding='max_length', truncation=True)
@@ -307,9 +309,9 @@ def validate(mmt_model, val_loader, args, epoch, tokenizer_model, thresholds=Non
         target = torch.cat(A_targets)
         loss = np.mean(A_loss)
         if args.dataset == 'mosei':
-            stats = calculate_stats(tav_output, target, thresholds, True)
+            stats = calculate_stats(tav_output, target, thresholds, True, ids=ids, valid_test=epoch, args=args)
         elif args.dataset == 'iemocap':
-            stats = calculate_stats(tav_output, target, thresholds, False)
+            stats = calculate_stats(tav_output, target, thresholds, False, ids=ids, valid_test=epoch, args=args)
 
         # save the prediction here
         exp_dir = args.exp_dir

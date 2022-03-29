@@ -5,7 +5,7 @@
 #SBATCH -N 1                                  # 作业申请 1 个节点
 #SBATCH --ntasks-per-node=3                   # 单节点启动的进程数为 2
 #SBATCH --cpus-per-task=3                     # 单任务使用的 CPU 核心数为 4
-#SBATCH --gres=gpu:tesla_v100s-pcie-32gb:1
+#SBATCH --gres=gpu:a100-pcie-40gb:1
 #SBATCH -t 10:00:00                            # 任务运行的最长时间为 100 小时
 
 source ~/.bashrc
@@ -18,7 +18,7 @@ cd /users10/zyzhang/multimodel/E2EMMT_interact
 batch_size=8
 lr=1e-4
 dataset="iemocap"
-model="ast_models_video_interact"
+model="ast_video_randomInitial"
 num_height=384
 num_width=384
 

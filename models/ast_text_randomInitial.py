@@ -6,6 +6,7 @@
 # @File    : ast_models.py
 
 from audioop import mul
+from email.mime import audio
 import torch
 import torch.nn as nn
 from torch.cuda.amp import autocast
@@ -15,7 +16,7 @@ os.environ['TORCH_HOME'] = '../pretrained_models'
 import timm
 import torch.nn.functional as F
 from timm.models.layers import to_2tuple,trunc_normal_
-from transformers import BeitModel, BeitConfig, BertModel,BeitFeatureExtractor
+from transformers import BeitModel, BeitConfig, AutoModel,BeitFeatureExtractor, AutoConfig
 
 # override the timm package to relax the input shape constraint.
 class PatchEmbed(nn.Module):
@@ -194,9 +195,7 @@ class VTModel_deit(nn.Module):
             else:
                 # if not use imagenet pretrained model, just randomly initialize a learnable positional embedding
                 # TODO can use sinusoidal positional embedding instead
-                # 跑消融实验的时候换成加载随机初始化的预训练模型
-                new_pos_embed = nn.Parameter(torch.zeros(1, 578, self.original_embedding_dim))
-                # new_pos_embed = nn.Parameter(torch.zeros(1, self.v.patch_embed.num_patches + 2, self.original_embedding_dim))
+                new_pos_embed = nn.Parameter(torch.zeros(1, self.v.patch_embed.num_patches + 2, self.original_embedding_dim))
                 self.v.pos_embed = new_pos_embed
                 trunc_normal_(self.v.pos_embed, std=.02)
 
@@ -239,7 +238,9 @@ class VTModel_deit(nn.Module):
 class TTModel(nn.Module):
     def __init__(self, num_classes):
         super(TTModel, self).__init__()
-        self.bert = BertModel.from_pretrained("/users10/zyzhang/graduationProject/data/pretrain_model/bert_base_uncased")
+
+        config = AutoConfig.from_pretrained("/users10/zyzhang/graduationProject/data/pretrain_model/bert_base_uncased")
+        self.bert = AutoModel.from_config(config)
         self.num_classes = num_classes
         self.mlp_head = nn.Sequential(nn.LayerNorm(768), nn.Linear(768, self.num_classes))
         # self.mlp = nn.Linear(768, self.num_classes)

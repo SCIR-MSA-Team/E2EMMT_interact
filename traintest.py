@@ -13,12 +13,12 @@ sys.path.append(os.path.dirname(os.path.dirname(sys.path[0])))
 from utilities import *
 import time
 import torch
-from torch import nn
+from torch import nn, zero_
 import numpy as np
 import pickle
 from torch.cuda.amp import autocast,GradScaler
 from tabulate import tabulate
-
+from pickle import dump
 
 def train(mmt_model, train_loader, test_loader, args, tokenizer_model):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -111,8 +111,6 @@ def train(mmt_model, train_loader, test_loader, args, tokenizer_model):
 
             text_input = tokenizer_model(text_input, return_tensors='pt', max_length=args.text_max_len, padding='max_length', truncation=True)
             text_input = text_input.to(device)
-
-
 
             labels = labels.to(device, non_blocking=True)
 
@@ -264,7 +262,7 @@ def train(mmt_model, train_loader, test_loader, args, tokenizer_model):
         per_sample_dnn_time.reset()
 
 
-def validate(mmt_model, val_loader, args, epoch, tokenizer_model, thresholds=None):
+def validate(mmt_model, val_loader, args, epoch, tokenizer_model, thresholds=None, state=False):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     batch_time = AverageMeter()
     if not isinstance(mmt_model, nn.DataParallel):
@@ -279,14 +277,34 @@ def validate(mmt_model, val_loader, args, epoch, tokenizer_model, thresholds=Non
     A_loss = []
     ids = []
     with torch.no_grad():
+        text_gat1_results, text_gat2_results, text_gat3_results = [], [], []
+        audio_gat1_results, audio_gat2_results, audio_gat3_results = [], [], []
+        video_gat1_results, video_gat2_results, video_gat3_results = [], [], []
+        label = []
         for i, (audio_input, video_input, text_input, labels, curr_id) in enumerate(val_loader):
             ids.extend(curr_id)
+            label.extend(labels.cpu().numpy())
             audio_input = audio_input.to(device)
             video_input = video_input.to(device, non_blocking=True)
             text_input = tokenizer_model(text_input, return_tensors='pt', max_length=args.text_max_len, padding='max_length', truncation=True)
             text_input = text_input.to(device)
             # compute output
-            tav_output = mmt_model(audio_input, video_input, text_input)
+            outputs = mmt_model(audio_input, video_input, text_input, state=state)
+            if state == True:
+                tav_output, text_gat1, text_gat2, text_gat3, audio_gat1, audio_gat2, audio_gat3, video_gat1, video_gat2, video_gat3 = outputs
+                text_gat1_results.extend(text_gat1.cpu().numpy())
+                text_gat2_results.extend(text_gat2.cpu().numpy())
+                text_gat3_results.extend(text_gat3.cpu().numpy())
+                audio_gat1_results.extend(audio_gat1.cpu().numpy())
+                audio_gat2_results.extend(audio_gat2.cpu().numpy())
+                audio_gat3_results.extend(audio_gat3.cpu().numpy())
+                video_gat1_results.extend(video_gat1.cpu().numpy())
+                video_gat2_results.extend(video_gat2.cpu().numpy())
+                video_gat3_results.extend(video_gat3.cpu().numpy())
+            else:
+                tav_output = outputs[0]
+
+            # tav_output = mmt_model(audio_input, video_input, text_input)
             # do not use Sigmoid here, use it in the calculate_stats Function
             # predictions = torch.sigmoid(tav_output)
             predictions = tav_output.to('cpu').detach()
@@ -319,6 +337,28 @@ def validate(mmt_model, val_loader, args, epoch, tokenizer_model, thresholds=Non
             os.mkdir(exp_dir+'/predictions')
             np.savetxt(exp_dir+'/predictions/target.csv', target, delimiter=',')
         np.savetxt(exp_dir+'/predictions/predictions_' + str(epoch) + '.csv', tav_output, delimiter=',')
+        if state == True:
+            text_gat1_results = np.array(text_gat1_results)#(1764, 12, 1, 768)
+            text_gat2_results = np.array(text_gat2_results)
+            text_gat3_results = np.array(text_gat3_results)
+            audio_gat1_results = np.array(audio_gat1_results)
+            audio_gat2_results = np.array(audio_gat2_results)
+            audio_gat3_results = np.array(audio_gat3_results)
+            video_gat1_results = np.array(video_gat1_results)
+            video_gat2_results = np.array(video_gat2_results)
+            video_gat3_results = np.array(video_gat3_results)
+            results = np.stack([text_gat1_results, text_gat2_results, text_gat3_results, audio_gat1_results, audio_gat2_results, audio_gat3_results, video_gat1_results, video_gat2_results, video_gat3_results], axis=2)
+            label = np.array(label)
+
+            map = dict()
+            map[0] = np.average(results[[True if int(l[0]) == 1 else False for l in label]],axis=0)
+            map[1] = np.average(results[[True if int(l[1]) == 1 else False for l in label]],axis=0)
+            map[2] = np.average(results[[True if int(l[2]) == 1 else False for l in label]],axis=0)
+            map[3] = np.average(results[[True if int(l[3]) == 1 else False for l in label]],axis=0)
+            map[4] = np.average(results[[True if int(l[4]) == 1 else False for l in label]],axis=0)
+            map[5] = np.average(results[[True if int(l[5]) == 1 else False for l in label]],axis=0)
+            dump(map, open('./visual/{}.pkl'.format(args.dataset),'wb'))
+            print("-----------Save--------------")
 
     return stats, loss
 

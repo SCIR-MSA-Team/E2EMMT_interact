@@ -9,6 +9,7 @@ import sys
 import os
 # import wandb
 import datetime
+from unittest import result
 sys.path.append(os.path.dirname(os.path.dirname(sys.path[0])))
 from utilities import *
 import time
@@ -261,7 +262,6 @@ def train(mmt_model, train_loader, test_loader, args, tokenizer_model):
         loss_meter.reset()
         per_sample_dnn_time.reset()
 
-
 def validate(mmt_model, val_loader, args, epoch, tokenizer_model, thresholds=None, state=False):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     batch_time = AverageMeter()
@@ -277,9 +277,9 @@ def validate(mmt_model, val_loader, args, epoch, tokenizer_model, thresholds=Non
     A_loss = []
     ids = []
     with torch.no_grad():
-        text_gat1_results, text_gat2_results, text_gat3_results = [], [], []
-        audio_gat1_results, audio_gat2_results, audio_gat3_results = [], [], []
-        video_gat1_results, video_gat2_results, video_gat3_results = [], [], []
+        text_gat1_results, text_gat2_results, text_gat3_results, text_atts, text_l2norm1, text_l2norm2, text_l2norm3, text_new_ts = [], [], [], [], [], [], [], []
+        audio_gat1_results, audio_gat2_results, audio_gat3_results, audio_atts, audio_l2norm1, audio_l2norm2, audio_l2norm3, audio_new_ts = [], [], [], [], [], [], [], []
+        video_gat1_results, video_gat2_results, video_gat3_results, video_atts, video_l2norm1, video_l2norm2, video_l2norm3, video_new_ts = [], [], [], [], [], [], [], []
         label = []
         for i, (audio_input, video_input, text_input, labels, curr_id) in enumerate(val_loader):
             ids.extend(curr_id)
@@ -291,7 +291,7 @@ def validate(mmt_model, val_loader, args, epoch, tokenizer_model, thresholds=Non
             # compute output
             outputs = mmt_model(audio_input, video_input, text_input, state=state)
             if state == True:
-                tav_output, text_gat1, text_gat2, text_gat3, audio_gat1, audio_gat2, audio_gat3, video_gat1, video_gat2, video_gat3 = outputs
+                tav_output, text_gat1, text_gat2, text_gat3, audio_gat1, audio_gat2, audio_gat3, video_gat1, video_gat2, video_gat3, t_attentions, t_l2norm1, t_l2norm2, t_l2norm3, a_attentions, a_l2norm1, a_l2norm2, a_l2norm3, v_attentions, v_l2norm1, v_l2norm2, v_l2norm3, t_new_ts, a_new_ts, v_new_ts = outputs
                 text_gat1_results.extend(text_gat1.cpu().numpy())
                 text_gat2_results.extend(text_gat2.cpu().numpy())
                 text_gat3_results.extend(text_gat3.cpu().numpy())
@@ -301,6 +301,21 @@ def validate(mmt_model, val_loader, args, epoch, tokenizer_model, thresholds=Non
                 video_gat1_results.extend(video_gat1.cpu().numpy())
                 video_gat2_results.extend(video_gat2.cpu().numpy())
                 video_gat3_results.extend(video_gat3.cpu().numpy())
+                text_atts.extend(t_attentions.cpu().numpy())
+                text_l2norm1.extend(t_l2norm1.cpu().numpy())
+                text_l2norm2.extend(t_l2norm2.cpu().numpy())
+                text_l2norm3.extend(t_l2norm3.cpu().numpy())
+                audio_atts.extend(a_attentions.cpu().numpy())
+                audio_l2norm1.extend(a_l2norm1.cpu().numpy())
+                audio_l2norm2.extend(a_l2norm2.cpu().numpy())
+                audio_l2norm3.extend(a_l2norm3.cpu().numpy())
+                video_atts.extend(v_attentions.cpu().numpy())
+                video_l2norm1.extend(v_l2norm1.cpu().numpy())
+                video_l2norm2.extend(v_l2norm2.cpu().numpy())
+                video_l2norm3.extend(v_l2norm3.cpu().numpy())
+                text_new_ts.extend(t_new_ts.cpu().numpy())
+                audio_new_ts.extend(a_new_ts.cpu().numpy())
+                video_new_ts.extend(v_new_ts.cpu().numpy())
             else:
                 tav_output = outputs[0]
 
@@ -347,8 +362,28 @@ def validate(mmt_model, val_loader, args, epoch, tokenizer_model, thresholds=Non
             video_gat1_results = np.array(video_gat1_results)
             video_gat2_results = np.array(video_gat2_results)
             video_gat3_results = np.array(video_gat3_results)
-            results = np.stack([text_gat1_results, text_gat2_results, text_gat3_results, audio_gat1_results, audio_gat2_results, audio_gat3_results, video_gat1_results, video_gat2_results, video_gat3_results], axis=2)
+            # text_atts = np.array(text_atts)
+            text_l2norm1 = np.array(text_l2norm1)
+            text_l2norm2 = np.array(text_l2norm2)
+            text_l2norm3 = np.array(text_l2norm3)
+            # audio_atts = np.array(audio_atts)
+            audio_l2norm1 = np.array(audio_l2norm1)
+            audio_l2norm2 = np.array(audio_l2norm2)
+            audio_l2norm3 = np.array(audio_l2norm3)
+            # video_atts = np.array(video_atts)
+            video_l2norm1 = np.array(video_l2norm1)
+            video_l2norm2 = np.array(video_l2norm2)
+            video_l2norm3 = np.array(video_l2norm3)
+            text_new_ts = np.array(text_new_ts)
+            audio_new_ts = np.array(audio_new_ts)
+            video_new_ts = np.array(video_new_ts)
+
+            gat_results = np.stack([text_gat1_results, text_gat2_results, text_gat3_results, audio_gat1_results, audio_gat2_results, audio_gat3_results, video_gat1_results, video_gat2_results, video_gat3_results], axis=2)
+            l2norm_result = np.stack([text_l2norm1, text_l2norm2, text_l2norm3, audio_l2norm1, audio_l2norm2, audio_l2norm3, video_l2norm1, video_l2norm2, video_l2norm3], axis = 1)
+            new_ts_result = np.stack([text_new_ts, audio_new_ts, video_new_ts], axis=-1)
             label = np.array(label)
+            results = new_ts_result
+            print('new_ts_result.shape',new_ts_result.shape)
 
             map = dict()
             map[0] = np.average(results[[True if int(l[0]) == 1 else False for l in label]],axis=0)
@@ -357,7 +392,7 @@ def validate(mmt_model, val_loader, args, epoch, tokenizer_model, thresholds=Non
             map[3] = np.average(results[[True if int(l[3]) == 1 else False for l in label]],axis=0)
             map[4] = np.average(results[[True if int(l[4]) == 1 else False for l in label]],axis=0)
             map[5] = np.average(results[[True if int(l[5]) == 1 else False for l in label]],axis=0)
-            dump(map, open('./visual/{}.pkl'.format(args.dataset),'wb'))
+            dump(map, open('./visual/{}_new_t.pkl'.format(args.dataset),'wb'))
             print("-----------Save--------------")
 
     return stats, loss

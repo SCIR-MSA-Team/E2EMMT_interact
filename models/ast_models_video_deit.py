@@ -16,6 +16,7 @@ import timm
 import torch.nn.functional as F
 from timm.models.layers import to_2tuple,trunc_normal_
 from transformers import BeitModel, BeitConfig, BertModel,BeitFeatureExtractor
+import torch.nn.functional as F
 
 # override the timm package to relax the input shape constraint.
 class PatchEmbed(nn.Module):
@@ -299,6 +300,11 @@ class MTModel(nn.Module):
         gat1_values = []
         gat2_values = []
         gat3_values = []
+        l2norm1 = []
+        l2norm2 = []
+        l2norm3 = []
+        attentions = []
+        new_ts = []
         for step in range(mode1.shape[0]):
             curr_embedding = self.layerNorm(curr_embedding)
             # curr_embedding.shape torch.Size([8, 768])
@@ -316,30 +322,45 @@ class MTModel(nn.Module):
             gat1 = torch.sigmoid(linear_a(torch.cat((map1_embedding, curr_embedding, mode1_cls_embedding),1)))
             gat1_values.append(gat1)
             map2_embedding_a = gat1 * map1_embedding
+            map2_embedding_a_l2_norm = torch.norm(map2_embedding_a, p=2, dim=-1)
+            l2norm1.append(map2_embedding_a_l2_norm)
             # map2_embedding_a.shape torch.Size([8, 768])
             gat2 = torch.sigmoid(linear_b(torch.cat((map1_embedding, curr_embedding, mode1_cls_embedding),1)))
             gat2_values.append(gat2)
             map2_embedding_b = gat2 * curr_embedding
+            map2_embedding_b_l2_norm = torch.norm(map2_embedding_b, p=2, dim=-1)
+            l2norm2.append(map2_embedding_b_l2_norm)
             # map2_embedding_b.shape torch.Size([8, 768])
             gat3 = torch.sigmoid(linear_c(torch.cat((map1_embedding, curr_embedding, mode1_cls_embedding),1)))
             gat3_values.append(gat3)
             map2_embedding_c = gat3 * mode1_cls_embedding 
+            map2_embedding_c_l2_norm = torch.norm(map2_embedding_c, p=2, dim=-1)
+            l2norm3.append(map2_embedding_c_l2_norm)
             # map2_embedding_c.shape torch.Size([8, 768])
             map2_embedding = map2_embedding_a + map2_embedding_b + map2_embedding_c
             # map2_embedding.shape torch.Size([8, 768])
             new_t_attention = attention(torch.cat((mode1_other_embedding,map2_embedding.unsqueeze(1).expand(-1,mode1_other_embedding.shape[1],-1)),-1)).squeeze(-1)
             # new_t_attention = torch.bmm(mode1_other_embedding,map2_embedding.unsqueeze(-1)).permute(0,2,1)
             new_t_attention = torch.softmax(new_t_attention,-1)
+            attentions.append(new_t_attention)
             new_t_attention = new_t_attention.unsqueeze(1)
             # new_t_attention.shape torch.Size([8, 1, 299])
             new_t = torch.bmm(new_t_attention,mode1_other_embedding).squeeze(1)
+            new_t_l2norm = torch.norm(new_t, p=2, dim=-1)
+            print('new_t_l2norm.shape',new_t_l2norm.shape)
+            new_ts.append(new_t_l2norm)
             # new_t.shape torch.Size([8, 768])
             curr_embedding = new_t + map2_embedding
             curr_embedding = self.layerNorm2(curr_embedding)
-        gat1_values = torch.stack(gat1_values).permute(1, 0, 2)#[16, 12, 1, 768]
+        gat1_values = torch.stack(gat1_values).permute(1, 0, 2)#[16, 12, 768]
         gat2_values = torch.stack(gat2_values).permute(1, 0, 2)
         gat3_values = torch.stack(gat3_values).permute(1, 0, 2)
-        return curr_embedding, gat1_values, gat2_values, gat3_values
+        l2norm1 = torch.stack(l2norm1).permute(1,0)
+        l2norm2 = torch.stack(l2norm2).permute(1,0)
+        l2norm3 = torch.stack(l2norm3).permute(1,0)
+        attentions = torch.stack(attentions)
+        new_ts = torch.stack(new_ts).permute(1,0)
+        return curr_embedding, gat1_values, gat2_values, gat3_values, attentions, l2norm1, l2norm2, l2norm3, new_ts
 
     @autocast()
     def forward(self, audio_input, video_input, text_input, state=None):
@@ -348,9 +369,9 @@ class MTModel(nn.Module):
         video_last_hidden_state, video_pooler_output, video_hidden_states = self.video_model(video_input)
         audio_hidden_states = self.audio_model(audio_input)
         
-        text_inte_embedding, text_gat1_result, text_gat2_result, text_gat3_result = self.interaction(text_hidden_states,audio_hidden_states,video_hidden_states,self.text_map1, self.text_map2_text,self.text_map2_audio, self.text_map2_video,self.text_attention, self.layerNorm_text, self.layerNorm_audio, self.layerNorm_video)
-        audio_inte_embedding, audio_gat1_result, audio_gat2_result, audio_gat3_result = self.interaction(audio_hidden_states, text_hidden_states, video_hidden_states, self.audio_map1, self.audio_map2_audio,self.audio_map2_text, self.audio_map2_video,self.audio_attention, self.layerNorm_audio, self.layerNorm_text, self.layerNorm_video)
-        video_inte_embedding, video_gat1_result, video_gat2_result, video_gat3_result = self.interaction(video_hidden_states, text_hidden_states, audio_hidden_states, self.video_map1, self.video_map2_video,self.video_map2_text,self.video_map2_audio,self.video_attention, self.layerNorm_video, self.layerNorm_text, self.layerNorm_audio)
+        text_inte_embedding, text_gat1_result, text_gat2_result, text_gat3_result, t_attentions, t_l2norm1, t_l2norm2, t_l2norm3, t_new_ts = self.interaction(text_hidden_states,audio_hidden_states,video_hidden_states,self.text_map1, self.text_map2_text,self.text_map2_audio, self.text_map2_video,self.text_attention, self.layerNorm_text, self.layerNorm_audio, self.layerNorm_video)
+        audio_inte_embedding, audio_gat1_result, audio_gat2_result, audio_gat3_result, a_attentions, a_l2norm1, a_l2norm2, a_l2norm3, a_new_ts = self.interaction(audio_hidden_states, text_hidden_states, video_hidden_states, self.audio_map1, self.audio_map2_audio,self.audio_map2_text, self.audio_map2_video,self.audio_attention, self.layerNorm_audio, self.layerNorm_text, self.layerNorm_video)
+        video_inte_embedding, video_gat1_result, video_gat2_result, video_gat3_result, v_attentions, v_l2norm1, v_l2norm2, v_l2norm3, v_new_ts = self.interaction(video_hidden_states, text_hidden_states, audio_hidden_states, self.video_map1, self.video_map2_video,self.video_map2_text,self.video_map2_audio,self.video_attention, self.layerNorm_video, self.layerNorm_text, self.layerNorm_audio)
         text_cls = text_hidden_states[-1, :, 0, :]
         audio_cls = audio_hidden_states[-1, :, 0, :]
         video_cls = video_hidden_states[-1, :, 0, :]
@@ -359,4 +380,4 @@ class MTModel(nn.Module):
         audio_pred = self.audio_predict(audio_cls)
         multimode_pred = self.fusion(torch.cat((text_inte_embedding, text_cls, video_inte_embedding, video_cls, audio_inte_embedding, audio_cls),-1))
         result = self.weighted_fusion(torch.stack((text_pred, video_pred, audio_pred, multimode_pred),-1)).squeeze(-1)
-        return result, text_gat1_result, text_gat2_result, text_gat3_result, audio_gat1_result, audio_gat2_result, audio_gat3_result, video_gat1_result, video_gat2_result, video_gat3_result
+        return result, text_gat1_result, text_gat2_result, text_gat3_result, audio_gat1_result, audio_gat2_result, audio_gat3_result, video_gat1_result, video_gat2_result, video_gat3_result, t_attentions, t_l2norm1, t_l2norm2, t_l2norm3, a_attentions, a_l2norm1, a_l2norm2, a_l2norm3, v_attentions, v_l2norm1, v_l2norm2, v_l2norm3, t_new_ts, a_new_ts, v_new_ts

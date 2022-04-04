@@ -177,6 +177,7 @@ class MultimodalDataset(Dataset):
                     face = face.permute(1, 3, 2, 4, 0)
                     output_faces.append(face.contiguous().view(-1, 16, 16, 3))
         if len(output_faces) > 0:
+            #每张人脸图片的大小是128*128，可以分成64个16*16的patch
             patch_num = (self.face_size//16) * (self.face_size//16) * len(output_faces)
             output_faces = torch.cat(output_faces, dim=0)
             

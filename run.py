@@ -354,7 +354,7 @@ mt_model = torch.nn.DataParallel(mt_model)
 mt_model.load_state_dict(sd)
 
 # best model on the validation set
-stats, _ = validate(mt_model, val_loader, args, 'valid_set', tokenizer_model, state=True)
+stats, _ = validate(mt_model, val_loader, args, 'valid_set', tokenizer_model)
 accs, recalls, precisions, f1s, aucs, best_thresholds = stats
 
 if args.dataset == 'mosei':

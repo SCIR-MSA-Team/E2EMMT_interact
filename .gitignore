@@ -4,3 +4,4 @@ pkl_files
 __pycache__
 model_dir
 wandb
+visual

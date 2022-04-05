@@ -377,8 +377,9 @@ for i in range(len(headers)):
 
 # test the model on the evaluation set
 eval_loader = torch.utils.data.DataLoader(
-    dataloader.MultimodalDataset(args.data_eval, label_map=label_maps[args.dataset], conf=val_conf, face_model=mtcnn, face_size=args.face_size, tokenizer_model=tokenizer_model),
-    collate_fn=dataloader.collate_fn,
+    dataloader.MultimodalDataset_visual(args.data_eval, label_map=label_maps[args.dataset], conf=val_conf, face_model=mtcnn, face_size=args.face_size, tokenizer_model=tokenizer_model),
+    # dataloader.MultimodalDataset(args.data_eval, label_map=label_maps[args.dataset], conf=val_conf, face_model=mtcnn, face_size=args.face_size, tokenizer_model=tokenizer_model),
+    collate_fn=dataloader.collate_fn_visual,
     batch_size=args.batch_size*2, shuffle=False, num_workers=args.num_workers, pin_memory=True)
 stats, test_loss = validate(mt_model, eval_loader, args, 'eval_set', tokenizer_model, best_thresholds, state=True)
 accs, recalls, precisions, f1s, aucs, best_thresholds = stats

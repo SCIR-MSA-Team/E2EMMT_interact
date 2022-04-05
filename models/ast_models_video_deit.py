@@ -347,7 +347,6 @@ class MTModel(nn.Module):
             # new_t_attention.shape torch.Size([8, 1, 299])
             new_t = torch.bmm(new_t_attention,mode1_other_embedding).squeeze(1)
             new_t_l2norm = torch.norm(new_t, p=2, dim=-1)
-            print('new_t_l2norm.shape',new_t_l2norm.shape)
             new_ts.append(new_t_l2norm)
             # new_t.shape torch.Size([8, 768])
             curr_embedding = new_t + map2_embedding
@@ -358,7 +357,7 @@ class MTModel(nn.Module):
         l2norm1 = torch.stack(l2norm1).permute(1,0)
         l2norm2 = torch.stack(l2norm2).permute(1,0)
         l2norm3 = torch.stack(l2norm3).permute(1,0)
-        attentions = torch.stack(attentions)
+        attentions = torch.stack(attentions).permute(1, 0, 2)#[12, 16, 299]
         new_ts = torch.stack(new_ts).permute(1,0)
         return curr_embedding, gat1_values, gat2_values, gat3_values, attentions, l2norm1, l2norm2, l2norm3, new_ts
 

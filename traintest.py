@@ -5,8 +5,10 @@
 # @Email   : yuangong@mit.edu
 # @File    : traintest.py
 
+import json
 import sys
 import os
+import cv2
 # import wandb
 import datetime
 from unittest import result
@@ -20,6 +22,8 @@ import pickle
 from torch.cuda.amp import autocast,GradScaler
 from tabulate import tabulate
 from pickle import dump
+import matplotlib
+import matplotlib.pyplot as plt
 
 def train(mmt_model, train_loader, test_loader, args, tokenizer_model):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -263,6 +267,9 @@ def train(mmt_model, train_loader, test_loader, args, tokenizer_model):
         per_sample_dnn_time.reset()
 
 def validate(mmt_model, val_loader, args, epoch, tokenizer_model, thresholds=None, state=False):
+    with open(args.data_eval, 'r') as fp:
+        data_json = json.load(fp)
+
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     batch_time = AverageMeter()
     if not isinstance(mmt_model, nn.DataParallel):
@@ -281,62 +288,132 @@ def validate(mmt_model, val_loader, args, epoch, tokenizer_model, thresholds=Non
         audio_gat1_results, audio_gat2_results, audio_gat3_results, audio_atts, audio_l2norm1, audio_l2norm2, audio_l2norm3, audio_new_ts = [], [], [], [], [], [], [], []
         video_gat1_results, video_gat2_results, video_gat3_results, video_atts, video_l2norm1, video_l2norm2, video_l2norm3, video_new_ts = [], [], [], [], [], [], [], []
         label = []
-        for i, (audio_input, video_input, text_input, labels, curr_id) in enumerate(val_loader):
-            ids.extend(curr_id)
-            label.extend(labels.cpu().numpy())
-            audio_input = audio_input.to(device)
-            video_input = video_input.to(device, non_blocking=True)
-            text_input = tokenizer_model(text_input, return_tensors='pt', max_length=args.text_max_len, padding='max_length', truncation=True)
-            text_input = text_input.to(device)
-            # compute output
-            outputs = mmt_model(audio_input, video_input, text_input, state=state)
-            if state == True:
-                tav_output, text_gat1, text_gat2, text_gat3, audio_gat1, audio_gat2, audio_gat3, video_gat1, video_gat2, video_gat3, t_attentions, t_l2norm1, t_l2norm2, t_l2norm3, a_attentions, a_l2norm1, a_l2norm2, a_l2norm3, v_attentions, v_l2norm1, v_l2norm2, v_l2norm3, t_new_ts, a_new_ts, v_new_ts = outputs
-                text_gat1_results.extend(text_gat1.cpu().numpy())
-                text_gat2_results.extend(text_gat2.cpu().numpy())
-                text_gat3_results.extend(text_gat3.cpu().numpy())
-                audio_gat1_results.extend(audio_gat1.cpu().numpy())
-                audio_gat2_results.extend(audio_gat2.cpu().numpy())
-                audio_gat3_results.extend(audio_gat3.cpu().numpy())
-                video_gat1_results.extend(video_gat1.cpu().numpy())
-                video_gat2_results.extend(video_gat2.cpu().numpy())
-                video_gat3_results.extend(video_gat3.cpu().numpy())
-                text_atts.extend(t_attentions.cpu().numpy())
-                text_l2norm1.extend(t_l2norm1.cpu().numpy())
-                text_l2norm2.extend(t_l2norm2.cpu().numpy())
-                text_l2norm3.extend(t_l2norm3.cpu().numpy())
-                audio_atts.extend(a_attentions.cpu().numpy())
-                audio_l2norm1.extend(a_l2norm1.cpu().numpy())
-                audio_l2norm2.extend(a_l2norm2.cpu().numpy())
-                audio_l2norm3.extend(a_l2norm3.cpu().numpy())
-                video_atts.extend(v_attentions.cpu().numpy())
-                video_l2norm1.extend(v_l2norm1.cpu().numpy())
-                video_l2norm2.extend(v_l2norm2.cpu().numpy())
-                video_l2norm3.extend(v_l2norm3.cpu().numpy())
-                text_new_ts.extend(t_new_ts.cpu().numpy())
-                audio_new_ts.extend(a_new_ts.cpu().numpy())
-                video_new_ts.extend(v_new_ts.cpu().numpy())
-            else:
+        # for i, (audio_input, video_input, text_input, labels, curr_id) in enumerate(val_loader):
+        if state == True:
+            for i, (audio_input, video_input, text_input, labels, curr_id, origi_fbanks) in enumerate(val_loader):
+                ids.extend(curr_id)
+                label.extend(labels.cpu().numpy())
+                audio_input = audio_input.to(device)
+                video_input = video_input.to(device, non_blocking=True)
+                text_input = tokenizer_model(text_input, return_tensors='pt', max_length=args.text_max_len, padding='max_length', truncation=True)
+                text_input = text_input.to(device)
+                # compute output
+                outputs = mmt_model(audio_input, video_input, text_input, state=state)
+                if state == True:
+                    tav_output, text_gat1, text_gat2, text_gat3, audio_gat1, audio_gat2, audio_gat3, video_gat1, video_gat2, video_gat3, t_attentions, t_l2norm1, t_l2norm2, t_l2norm3, a_attentions, a_l2norm1, a_l2norm2, a_l2norm3, v_attentions, v_l2norm1, v_l2norm2, v_l2norm3, t_new_ts, a_new_ts, v_new_ts = outputs
+                    text_gat1_results.extend(text_gat1.cpu().numpy())
+                    text_gat2_results.extend(text_gat2.cpu().numpy())
+                    text_gat3_results.extend(text_gat3.cpu().numpy())
+                    audio_gat1_results.extend(audio_gat1.cpu().numpy())
+                    audio_gat2_results.extend(audio_gat2.cpu().numpy())
+                    audio_gat3_results.extend(audio_gat3.cpu().numpy())
+                    video_gat1_results.extend(video_gat1.cpu().numpy())
+                    video_gat2_results.extend(video_gat2.cpu().numpy())
+                    video_gat3_results.extend(video_gat3.cpu().numpy())
+                    text_atts.extend(t_attentions.cpu().numpy())
+                    text_l2norm1.extend(t_l2norm1.cpu().numpy())
+                    text_l2norm2.extend(t_l2norm2.cpu().numpy())
+                    text_l2norm3.extend(t_l2norm3.cpu().numpy())
+                    audio_atts.extend(a_attentions.cpu().numpy())
+                    audio_l2norm1.extend(a_l2norm1.cpu().numpy())
+                    audio_l2norm2.extend(a_l2norm2.cpu().numpy())
+                    audio_l2norm3.extend(a_l2norm3.cpu().numpy())
+                    video_atts.extend(v_attentions.cpu().numpy())
+                    video_l2norm1.extend(v_l2norm1.cpu().numpy())
+                    video_l2norm2.extend(v_l2norm2.cpu().numpy())
+                    video_l2norm3.extend(v_l2norm3.cpu().numpy())
+                    text_new_ts.extend(t_new_ts.cpu().numpy())
+                    audio_new_ts.extend(a_new_ts.cpu().numpy())
+                    video_new_ts.extend(v_new_ts.cpu().numpy())
+                    # print('t_attentions.shape',t_attentions.shape)#[16, 12, 299]
+                    # print('a_attentions.shape',a_attentions.shape)#[16, 12, 513]
+                    # print('v_attentions.shape',v_attentions.shape)#[16, 12, 577]
+                    for index in range(v_attentions.shape[0]):
+                        id = curr_id[index]
+                        print('id',id)
+                        # wav_path = data_json[id]['wav']
+                        os.mkdir('./visual/{}'.format(id))
+                        for layer in range(12):
+                            curr_fbank = origi_fbanks[index] #[1024, 128]
+                            curr_audio_att = a_attentions[index][2][1:] #[512]
+                            fbank_x, fbank_y = curr_fbank.shape
+                            if fbank_y > 1024:
+                                fbank_y = 1024
+                                curr_fbank = curr_fbank[:, :1024]
+                            temp = np.array(np.empty(curr_audio_att.shape[0]*2, dtype=np.float32))
+                            for i in range(len(curr_audio_att)):
+                                temp[i * 2] = curr_audio_att[i]
+                                temp[i * 2 + 1] = curr_audio_att[i]
+                            mask = np.reshape(temp, (1, -1))
+                            mask = np.array(mask)
+                            mask = mask / mask.max()
+                            mask = mask.repeat(128, axis=0)
+                            curr_fbank = curr_fbank.transpose(1, 0)
+                            result = (mask * curr_fbank.numpy())
+                            fig, (ax1, ax2, ax3) = plt.subplots(nrows=3, figsize=(16, 10))
+                            ax1.set_title('Original')
+                            ax2.set_title('Mask')
+                            ax3.set_title('Result')
+                            _ = ax1.imshow(curr_fbank, norm=matplotlib.colors.Normalize(vmin=0, vmax=1))
+                            _ = ax2.imshow(mask, norm=matplotlib.colors.Normalize(vmin=0, vmax=1))
+                            _ = ax3.imshow(result, norm=matplotlib.colors.Normalize(vmin=0, vmax=1))
+                            plt.savefig('./visual/{}/layer_{}.jpg'.format(id, layer))
+                            
+                            #下面可视化video模态
+                            
+
+
+                else:
+                    tav_output = outputs[0]
+
+                # tav_output = mmt_model(audio_input, video_input, text_input)
+                # do not use Sigmoid here, use it in the calculate_stats Function
+                # predictions = torch.sigmoid(tav_output)
+                predictions = tav_output.to('cpu').detach()
+
+                A_predictions.append(predictions)
+                A_targets.append(labels)
+
+                # compute the loss
+                labels = labels.to(device)
+                if isinstance(args.loss_fn, torch.nn.CrossEntropyLoss):
+                    loss = args.loss_fn(tav_output, torch.argmax(labels.long(), axis=1))
+                else:
+                    loss = args.loss_fn(tav_output, labels)
+                A_loss.append(loss.to('cpu').detach())
+
+                batch_time.update(time.time() - end)
+                end = time.time()
+        else:
+            for i, (audio_input, video_input, text_input, labels, curr_id) in enumerate(val_loader):
+                ids.extend(curr_id)
+                label.extend(labels.cpu().numpy())
+                audio_input = audio_input.to(device)
+                video_input = video_input.to(device, non_blocking=True)
+                text_input = tokenizer_model(text_input, return_tensors='pt', max_length=args.text_max_len, padding='max_length', truncation=True)
+                text_input = text_input.to(device)
+                # compute output
+                outputs = mmt_model(audio_input, video_input, text_input, state=state)
                 tav_output = outputs[0]
 
-            # tav_output = mmt_model(audio_input, video_input, text_input)
-            # do not use Sigmoid here, use it in the calculate_stats Function
-            # predictions = torch.sigmoid(tav_output)
-            predictions = tav_output.to('cpu').detach()
+                # tav_output = mmt_model(audio_input, video_input, text_input)
+                # do not use Sigmoid here, use it in the calculate_stats Function
+                # predictions = torch.sigmoid(tav_output)
+                predictions = tav_output.to('cpu').detach()
 
-            A_predictions.append(predictions)
-            A_targets.append(labels)
+                A_predictions.append(predictions)
+                A_targets.append(labels)
 
-            # compute the loss
-            labels = labels.to(device)
-            if isinstance(args.loss_fn, torch.nn.CrossEntropyLoss):
-                loss = args.loss_fn(tav_output, torch.argmax(labels.long(), axis=1))
-            else:
-                loss = args.loss_fn(tav_output, labels)
-            A_loss.append(loss.to('cpu').detach())
+                # compute the loss
+                labels = labels.to(device)
+                if isinstance(args.loss_fn, torch.nn.CrossEntropyLoss):
+                    loss = args.loss_fn(tav_output, torch.argmax(labels.long(), axis=1))
+                else:
+                    loss = args.loss_fn(tav_output, labels)
+                A_loss.append(loss.to('cpu').detach())
 
-            batch_time.update(time.time() - end)
-            end = time.time()
+                batch_time.update(time.time() - end)
+                end = time.time()
 
         tav_output = torch.cat(A_predictions)
         target = torch.cat(A_targets)

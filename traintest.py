@@ -9,6 +9,8 @@ import json
 import sys
 import os
 import cv2
+import glob
+from PIL import Image
 # import wandb
 import datetime
 from unittest import result
@@ -19,6 +21,7 @@ import torch
 from torch import nn, zero_
 import numpy as np
 import pickle
+from facenet_pytorch import MTCNN
 from torch.cuda.amp import autocast,GradScaler
 from tabulate import tabulate
 from pickle import dump
@@ -269,6 +272,9 @@ def train(mmt_model, train_loader, test_loader, args, tokenizer_model):
 def validate(mmt_model, val_loader, args, epoch, tokenizer_model, thresholds=None, state=False):
     with open(args.data_eval, 'r') as fp:
         data_json = json.load(fp)
+        map = dict()
+        for data in data_json:
+            map[data['id']]=data
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     batch_time = AverageMeter()
@@ -290,6 +296,7 @@ def validate(mmt_model, val_loader, args, epoch, tokenizer_model, thresholds=Non
         label = []
         # for i, (audio_input, video_input, text_input, labels, curr_id) in enumerate(val_loader):
         if state == True:
+            mtcnn = MTCNN(image_size=args.face_size, margin=10, selection_method="probability", post_process=False, device='cpu')
             for i, (audio_input, video_input, text_input, labels, curr_id, origi_fbanks) in enumerate(val_loader):
                 ids.extend(curr_id)
                 label.extend(labels.cpu().numpy())
@@ -330,9 +337,8 @@ def validate(mmt_model, val_loader, args, epoch, tokenizer_model, thresholds=Non
                     # print('v_attentions.shape',v_attentions.shape)#[16, 12, 577]
                     for index in range(v_attentions.shape[0]):
                         id = curr_id[index]
-                        print('id',id)
-                        # wav_path = data_json[id]['wav']
-                        os.mkdir('./visual/{}'.format(id))
+                        if not os.path.exists('./visual/{}'.format(id)):
+                            os.mkdir('./visual/{}'.format(id))
                         for layer in range(12):
                             curr_fbank = origi_fbanks[index] #[1024, 128]
                             curr_audio_att = a_attentions[index][2][1:] #[512]
@@ -360,7 +366,72 @@ def validate(mmt_model, val_loader, args, epoch, tokenizer_model, thresholds=Non
                             plt.savefig('./visual/{}/layer_{}.jpg'.format(id, layer))
                             
                             #下面可视化video模态
+                            video_atten = v_attentions[index][layer][1:]
+                            data = map[id]
+                            wav_path = data['wav']
+                            wav_name = wav_path.split('/')[-1]
+                            if 'R' in wav_name or 'L' in wav_name:
+                                dir_name = wav_path[:-12]
+                                prefix_name = wav_path[-5]
+                                files = glob.glob(f'{dir_name}/*')
+                                nums = (len(files) - 5) // 2
+                                step = int(500 / 1000 * 30)
+                                sampled = [os.path.join(dir_name, f'image_{prefix_name}_{i}.jpg') for i in list(range(0, nums, step))]
+                            else:
+                                dir_name = wav_path[:-10]
+                                files = glob.glob(f'{dir_name}/*')
+                                nums = len(files) - 1
+                                step = int(500 / 1000 * 30)
+                                sampled = [os.path.join(dir_name, f'image_{i}.jpg') for i in list(range(0, nums, step))]
+                                if len(sampled) == 0:
+                                    step = int(500 / 1000 * 30) // 4
+                                    sampled = [os.path.join(dir_name, f'image_{i}.jpg') for i in list(range(0, nums, step))]
                             
+
+                            # print('sampled',sampled)
+                            # print('len(sampled)',len(sampled))
+
+                            for j in range(min(len(sampled), 9)):
+                                token_attn = video_atten[j*64: (j+1)*64]
+                                print('token_attn.shape',token_attn.shape)
+                                token_attn = torch.softmax(token_attn, dim=0)
+                                # token_attn = token_attn.mean(dim=-1)
+                                mask = token_attn
+
+                                mask = mask.cpu().numpy().reshape(8,8)
+
+                                temp = np.empty((mask.shape[0]*16,mask.shape[1]*16))
+                                for row in range(8):
+                                    for col in range(8):
+                                        for row2 in range(16):
+                                            for col2 in range(16):
+                                                temp[row*16 + row2][col*16 + col2] = mask[row][col]
+                                mask = np.array(temp).reshape(temp.shape[0], temp.shape[1], 1)
+                                
+                                im = mtcnn(Image.open(sampled[j]))
+                                im = im.int().permute(1, 2, 0)
+                                im = np.array(im)
+
+                                result = (mask * im).astype('uint8')
+                                print('mask.shape',mask.shape)
+                                print('im.shape',im.shape)
+                                print('result.shape',result.shape)
+
+                                fig, (ax1, ax2, ax3) = plt.subplots(ncols = 3, figsize=(16, 16))
+                                ax1.set_title('Original')
+                                ax2.set_title('Mask')
+                                ax3.set_title('Result')
+                                _ = ax1.imshow(im)
+                                _ = ax2.imshow(mask)
+                                _ = ax3.imshow(result)
+                                plt.savefig('./visual/{}/layer_{}_iamge_{}.jpg'.format(id, layer, j))
+
+
+                            print('video_atten.shape',video_atten.shape)
+                            print('data',data)
+                            print('wav_path',wav_path)
+                            exit()
+                            print()
 
 
                 else:

@@ -26,6 +26,7 @@ from torch.cuda.amp import autocast,GradScaler
 from tabulate import tabulate
 from pickle import dump
 import matplotlib
+from visual_text import visual_text
 import matplotlib.pyplot as plt
 
 def train(mmt_model, train_loader, test_loader, args, tokenizer_model):
@@ -269,6 +270,9 @@ def train(mmt_model, train_loader, test_loader, args, tokenizer_model):
         loss_meter.reset()
         per_sample_dnn_time.reset()
 
+
+
+
 def validate(mmt_model, val_loader, args, epoch, tokenizer_model, thresholds=None, state=False):
     with open(args.data_eval, 'r') as fp:
         data_json = json.load(fp)
@@ -337,8 +341,8 @@ def validate(mmt_model, val_loader, args, epoch, tokenizer_model, thresholds=Non
                     # print('v_attentions.shape',v_attentions.shape)#[16, 12, 577]
                     for index in range(v_attentions.shape[0]):
                         id = curr_id[index]
-                        if not os.path.exists('./visual/{}'.format(id)):
-                            os.mkdir('./visual/{}'.format(id))
+                        if not os.path.exists('./visual/{}/{}'.format(args.dataset,id)):
+                            os.mkdir('./visual/{}/{}'.format(args.dataset,id))
                         for layer in range(12):
                             curr_fbank = origi_fbanks[index] #[1024, 128]
                             curr_audio_att = a_attentions[index][2][1:] #[512]
@@ -363,7 +367,7 @@ def validate(mmt_model, val_loader, args, epoch, tokenizer_model, thresholds=Non
                             _ = ax1.imshow(curr_fbank, norm=matplotlib.colors.Normalize(vmin=0, vmax=1))
                             _ = ax2.imshow(mask, norm=matplotlib.colors.Normalize(vmin=0, vmax=1))
                             _ = ax3.imshow(result, norm=matplotlib.colors.Normalize(vmin=0, vmax=1))
-                            plt.savefig('./visual/{}/layer_{}.jpg'.format(id, layer))
+                            plt.savefig('./visual/{}/{}/layer_{}.jpg'.format(args.dataset, id, layer))
                             
                             #下面可视化video模态
                             video_atten = v_attentions[index][layer][1:]
@@ -388,61 +392,37 @@ def validate(mmt_model, val_loader, args, epoch, tokenizer_model, thresholds=Non
                                     sampled = [os.path.join(dir_name, f'image_{i}.jpg') for i in list(range(0, nums, step))]
                             
 
-                            # print('sampled',sampled)
-                            # print('len(sampled)',len(sampled))
-
                             for j in range(min(len(sampled), 9)):
-                                token_attn = video_atten[j*64: (j+1)*64]
-                                print('token_attn.shape',token_attn.shape)
-                                token_attn = torch.softmax(token_attn, dim=0)
-                                # token_attn = token_attn.mean(dim=-1)
-                                mask = token_attn
-                                mask = mask/mask.max()
+                                try:
+                                    token_attn = video_atten[j*64: (j+1)*64]
+                                    mask = token_attn
+                                    mask = mask.cpu().numpy().reshape(8,8)
 
-                                mask = mask.cpu().numpy().reshape(8,8)
+                                    im = mtcnn(Image.open(sampled[j]))
+                                    im = im.int().permute(1, 2, 0)
+                                    im = np.array(im)
+                                    im = Image.fromarray(np.uint8(im))
+                                    mask = cv2.resize(mask / mask.max(), im.size)[..., np.newaxis]
+                                    result = (mask * im).astype('uint8')
 
-                                temp = np.empty((mask.shape[0]*16,mask.shape[1]*16))
-                                for row in range(8):
-                                    for col in range(8):
-                                        for row2 in range(16):
-                                            for col2 in range(16):
-                                                temp[row*16 + row2][col*16 + col2] = mask[row][col]
-                                mask = np.array(temp).reshape(temp.shape[0], temp.shape[1], 1)
-                                
-                                im = mtcnn(Image.open(sampled[j]))
-                                im = im.int().permute(1, 2, 0)
-                                im = np.array(im)
-                                result = np.empty((im.shape[0], im.shape[1], im.shape[2]))
-                                for t in range(3):
-                                    for row in range(result.shape[0]):
-                                        for col in range(result.shape[1]):
-                                            result[row][col][t] = im[row][col][t]*mask[row][col][0]
+                                    fig, (ax1, ax2, ax3) = plt.subplots(ncols = 3, figsize=(16, 16))
+                                    ax1.set_title('Original')
+                                    ax2.set_title('Mask')
+                                    ax3.set_title('Result')
+                                    _ = ax1.imshow(im)
+                                    _ = ax2.imshow(mask)
+                                    _ = ax3.imshow(result)
+                                    plt.savefig('./visual/{}/{}/layer_{}_iamge_{}.jpg'.format(args.dataset, id, layer, j))
+                                except:
+                                    break
 
-                                # result = (mask * im).astype('uint8')
-                                print('mask.shape',mask.shape)
-                                print('im.shape',im.shape)
-                                print('result.shape',result.shape)
-                                # print('mask',mask)
-                                # print('im',im)
-                                # print('result',result)
-                                # exit()
-
-                                fig, (ax1, ax2, ax3) = plt.subplots(ncols = 3, figsize=(16, 16))
-                                ax1.set_title('Original')
-                                ax2.set_title('Mask')
-                                ax3.set_title('Result')
-                                _ = ax1.imshow(im)
-                                _ = ax2.imshow(mask)
-                                _ = ax3.imshow(result)
-                                plt.savefig('./visual/{}/layer_{}_iamge_{}.jpg'.format(id, layer, j))
-
-
-                            print('video_atten.shape',video_atten.shape)
-                            print('data',data)
-                            print('wav_path',wav_path)
-                            exit()
-                            print()
-
+                            #下面可视化文本
+                            curr_text = data['text']
+                            curr_text = tokenizer_model.tokenize(curr_text)
+                            curr_attention = t_attentions[index][layer]
+                            curr_attention = curr_attention[1:1+len(curr_text)].cpu().numpy()
+                            
+                            visual_text(curr_text, curr_attention, './visual/{}/{}/text_layer_{}.html'.format(args.dataset, id, layer))
 
                 else:
                     tav_output = outputs[0]

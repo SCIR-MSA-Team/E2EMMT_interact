@@ -397,6 +397,7 @@ def validate(mmt_model, val_loader, args, epoch, tokenizer_model, thresholds=Non
                                 token_attn = torch.softmax(token_attn, dim=0)
                                 # token_attn = token_attn.mean(dim=-1)
                                 mask = token_attn
+                                mask = mask/mask.max()
 
                                 mask = mask.cpu().numpy().reshape(8,8)
 
@@ -411,11 +412,20 @@ def validate(mmt_model, val_loader, args, epoch, tokenizer_model, thresholds=Non
                                 im = mtcnn(Image.open(sampled[j]))
                                 im = im.int().permute(1, 2, 0)
                                 im = np.array(im)
+                                result = np.empty((im.shape[0], im.shape[1], im.shape[2]))
+                                for t in range(3):
+                                    for row in range(result.shape[0]):
+                                        for col in range(result.shape[1]):
+                                            result[row][col][t] = im[row][col][t]*mask[row][col][0]
 
-                                result = (mask * im).astype('uint8')
+                                # result = (mask * im).astype('uint8')
                                 print('mask.shape',mask.shape)
                                 print('im.shape',im.shape)
                                 print('result.shape',result.shape)
+                                # print('mask',mask)
+                                # print('im',im)
+                                # print('result',result)
+                                # exit()
 
                                 fig, (ax1, ax2, ax3) = plt.subplots(ncols = 3, figsize=(16, 16))
                                 ax1.set_title('Original')

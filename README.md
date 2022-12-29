@@ -15,18 +15,3 @@ python run.py --batch-size 8 --time_dim_split True --face_size 128 --v_patch_num
 
 ### SBATCH
 See generate_slurms.py
-
-## Results
-See https://docs.qq.com/sheet/DTEFpbFZMWmZESUR6?tab=BB08J2
-
-## 消融实验
-- 去掉interact部分代码，只用3个cls predict的结果+3个cls的cat predict结果(Done)
-- 调研某一层的重要性：(Done)
-    - 从最后一层倒着向前选择1层，2层，3层看实验结果(Done)
-    - 在12层中去掉第1层，第2层，，，看实验结果(Done)
-- TA，TV，AV实验结果(Done)
-- interact去掉attention部分(Done)
-
-- 两个baseline: MulT和(其中的数据需要处理一下，因为)
-- 讲ast_models_deit中的3个模态transformer参数冻结住
-- 去掉interact部分代码，只用3个cls predict的结果+3个cls的cat predict结果，这个实验的参数冻结住
